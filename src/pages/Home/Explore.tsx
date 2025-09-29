@@ -3,10 +3,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiSearch, FiFilter, FiGrid, FiList, FiSliders } from "react-icons/fi";
 
 import { useNavigate } from "react-router-dom";
-import { useSystemsx } from "../../api";
+import { useSystems } from "../../api";
 import ExploreProjectCard from "../../components/Cards/ExploreProjectCard";
 import Pagination from "../../components/NewPagination";
-import { ISession, ISystem, SessionsResponse } from "../../interfaces";
+import { ISession, ISystem, ISessionsResponse } from "../../interfaces";
 import { useAuthQuery } from "../../imports";
 
 // Helper to know when we're on desktop
@@ -34,18 +34,16 @@ export default function Explore() {
   const ITEMS_PER_PAGE = 6;
   /* ----------------Data-------------------------------------- */
   const useExploreSessionx = () =>
-    useAuthQuery<SessionsResponse>({
+    useAuthQuery<ISessionsResponse>({
       queryKey: [`SessionData-${currentPage}`],
-      url: `/sessions/?size=${ITEMS_PER_PAGE}&page=${currentPage}`,
+      url: `/sessions/?size=${ITEMS_PER_PAGE}&page=${currentPage - 1}`,
     });
 
-  const System = useSystemsx();
+  const System = useSystems();
   const Systems = System.data?.data.systems;
   const Session = useExploreSessionx();
-  const SessionLength = Session.data?.data?.length ?? 0;
-  const SessionData = Session.data?.data;
-  const totalPages = Math.ceil(SessionLength / ITEMS_PER_PAGE);
-
+  const SessionData = Session.data?.data.sessions;
+  console.log(SessionData);
   const isDesktop = useIsDesktop();
 
   // Reset page when filters change
@@ -220,7 +218,7 @@ export default function Explore() {
 
           {/* Projects Grid/List */}
           <AnimatePresence mode="wait">
-            {SessionLength > 0 ? (
+            {Session.data?.data?.totalItems! > 0 ? (
               <motion.div
                 key={`${viewMode}-${currentPage}`}
                 initial={{ opacity: 0, y: 20 }}
@@ -275,7 +273,7 @@ export default function Explore() {
           <Pagination
             currentPage={currentPage}
             setCurrentPage={setCurrentPage}
-            totalPages={totalPages}
+            totalPages={Session.data?.data?.totalPages!}
           />
         </div>
       </section>

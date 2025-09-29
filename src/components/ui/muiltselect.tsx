@@ -14,14 +14,17 @@ type MultiSelectFieldProps<T> = {
   label: string;
   options: T[];
   rules?: object;
-  getLabel: (item: T) => string;
+  getLabel: (item: T) => string; // e.g. (o) => o.name
+  getValue: (item: T) => string | number; // e.g. (o) => o.id
 };
+
 export default function MultiSelectField<T>({
   name,
   label,
   options,
   rules = {},
   getLabel,
+  getValue,
 }: MultiSelectFieldProps<T>) {
   const {
     control,
@@ -35,7 +38,11 @@ export default function MultiSelectField<T>({
       control={control}
       rules={rules}
       render={({ field: { value = [], onChange } }) => (
-        <Listbox value={value} onChange={onChange} multiple>
+        <Listbox
+          value={value}
+          onChange={onChange}
+          multiple
+        >
           <Label className="block text-sm font-medium text-gray-700">
             {label}
           </Label>
@@ -43,20 +50,21 @@ export default function MultiSelectField<T>({
             <ListboxButton className="relative w-full cursor-default rounded-md bg-white py-2 pl-3 pr-10 text-left border border-gray-300 shadow-sm sm:text-sm min-h-[42px]">
               <span className="flex flex-wrap gap-2 items-center">
                 {value.length > 0 ? (
-                  value.map((item: T, idx: number) => (
-                    <span
-                      key={idx}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onChange(
-                          value.filter((v: T) => getLabel(v) !== getLabel(item))
-                        );
-                      }}
-                      className=" text-xs px-2 py-1 rounded-full bg-[#42D5AE]/10 text-[#022639] transition cursor-pointer"
-                    >
-                      {getLabel(item)}
-                    </span>
-                  ))
+                  value.map((id: string | number, idx: number) => {
+                    const item = options.find((o) => getValue(o) === id);
+                    return (
+                      <span
+                        key={idx}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onChange(value.filter((v: string | number) => v !== id));
+                        }}
+                        className="text-xs px-2 py-1 rounded-full bg-[#42D5AE]/10 text-[#022639] transition cursor-pointer"
+                      >
+                        {item ? getLabel(item) : id}
+                      </span>
+                    );
+                  })
                 ) : (
                   <span className="text-gray-400">Select {label}</span>
                 )}
@@ -70,14 +78,11 @@ export default function MultiSelectField<T>({
             </ListboxButton>
             <ListboxOptions className="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 sm:text-sm">
               {options
-                .filter(
-                  (option) =>
-                    !value.some((v: T) => getLabel(v) === getLabel(option))
-                )
+                .filter((o) => !value.includes(getValue(o)))
                 .map((option, idx) => (
                   <ListboxOption
                     key={idx}
-                    value={option}
+                    value={getValue(option)}
                     className="cursor-default select-none relative py-2 pl-3 pr-9 hover:bg-gray-100"
                   >
                     {({ selected }) => (

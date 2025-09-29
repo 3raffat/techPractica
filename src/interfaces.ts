@@ -98,6 +98,26 @@ export interface IField {
   name: string;
 }
 /*-------------------------------------------------------------------------------------------------- */
+export interface ITechnologyResponse {
+  data: {
+    technologies: ITechnology[];
+  };
+  status: number;
+  message: string;
+}
+
+export interface ITechnology {
+  id: string;
+  name: string;
+  fields: IField[];
+}
+
+export interface IField {
+  id: string;
+  name: string;
+}
+
+/*-------------------------------------------------------------------------------------------------- */
 export interface IFormInputRegister {
   name: string;
   email: string;
@@ -106,6 +126,45 @@ export interface IFormInputRegister {
 export interface IFormInputLogin {
   email: string;
   password: string;
+}
+/*-------------------------------------------------------------------------------------------------- */
+export interface ISessionRequest {
+  data: {
+    id: string;
+    name: string;
+    description: string;
+    system: {
+      id: string;
+      name: string;
+    };
+    requirements: {
+      requirementId: string;
+      field: string;
+      technologies: string[];
+    }[];
+    ownerFullName: string;
+    running: boolean;
+    private: boolean;
+  };
+  status: number;
+  message: string;
+}
+
+export interface ICreateSessionRequest {
+  name: string;
+  description: string;
+  isPrivate: boolean;
+  system: string;
+  field: string[];
+  technologies: string[];
+}
+/*-------------------------------------------------------------------------------------------------- */
+
+export interface IErrorResponse {
+  timestamp: string | null;
+  status: number;
+  message?: string;
+  code: string;
 }
 
 /*-------------------------------------------------------------------------------------------------- */

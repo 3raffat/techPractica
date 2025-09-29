@@ -14,7 +14,8 @@ type SelectFieldProps<T> = {
   name: string;
   label: string;
   options: T[];
-  getLabel: (option: T) => string;
+  getLabel: (option: T) => string; 
+  getValue: (option: T) => string | number; 
   rules?: object;
 };
 
@@ -23,6 +24,7 @@ export default function SelectField<T>({
   label,
   options,
   getLabel,
+  getValue,
   rules = {},
 }: SelectFieldProps<T>) {
   const {
@@ -38,15 +40,14 @@ export default function SelectField<T>({
       control={control}
       rules={rules}
       render={({ field }) => {
+        // find selected option based on stored id
         const selectedOption =
-          options.find((opt) => getLabel(opt) === field.value) ?? null;
+          options.find((opt) => getValue(opt) === field.value) ?? null;
 
         return (
           <Listbox
             value={selectedOption}
-            onChange={(val: T) => {
-              field.onChange(getLabel(val));
-            }}
+            onChange={(val: T) => field.onChange(getValue(val))}
           >
             <Label className="text-sm font-medium text-gray-700">{label}</Label>
 
@@ -66,20 +67,25 @@ export default function SelectField<T>({
               </ListboxButton>
 
               <ListboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 sm:text-sm">
-                {options.map((option, idx) => (
-                  <ListboxOption
-                    key={idx}
-                    value={option}
-                    className="cursor-default select-none relative py-2 pl-3 pr-9 hover:bg-gray-100 hover:text-black"
-                  >
-                    <span className="block truncate">{getLabel(option)}</span>
-                    {getLabel(option) === field.value && (
-                      <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-red-600">
-                        <FaCheck className="h-5 w-5" aria-hidden="true" />
+                {options.map((option, idx) => {
+                  const id = getValue(option);
+                  return (
+                    <ListboxOption
+                      key={idx}
+                      value={option}
+                      className="cursor-default select-none relative py-2 pl-3 pr-9 hover:bg-gray-100 hover:text-black"
+                    >
+                      <span className="block truncate">
+                        {getLabel(option)}
                       </span>
-                    )}
-                  </ListboxOption>
-                ))}
+                      {field.value === id && (
+                        <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-red-600">
+                          <FaCheck className="h-5 w-5" aria-hidden="true" />
+                        </span>
+                      )}
+                    </ListboxOption>
+                  );
+                })}
               </ListboxOptions>
               {errorMessage && <ErrorMsg Msg={errorMessage} />}
             </div>

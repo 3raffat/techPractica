@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Pagination from "../../components/NewPagination";
-import { ProjectCard } from "../../components/Cards/DashboardSessionCard";
-import { ProjectModal } from "../../components/NewProjectModel";
-import { Filter, FolderOpen, Plus, Search } from "lucide-react";
-import { ExploreSessionsResponse, ISystem } from "../../interfaces";
-import { useSystemsx } from "../../api";
+import { Filter, Plus, Search } from "lucide-react";
+import { ISystem } from "../../interfaces";
+import { useSystems } from "../../api";
+import { CookiesService } from "../../imports";
+import { Link, useNavigate } from "react-router-dom";
 
 const statuses = ["All", "draft", "in-progress", "completed"];
 const visibilities = ["All", "public", "private"];
@@ -34,7 +34,6 @@ function useIsDesktop(breakpoint = 1024) {
 // Create/Edit Project Modal
 
 export default function Dashboard() {
-  const [projects, setProjects] = useState<ExploreSessionsResponse>();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
@@ -42,21 +41,10 @@ export default function Dashboard() {
   const [sortBy, setSortBy] = useState("updated");
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingProject, setEditingProject] = useState<any>(null);
 
   const isDesktop = useIsDesktop();
-
+  const Navigate = useNavigate();
   /*-----------Handlers--------------------------------------------------------------------*/
-  const handleCreateProject = () => {
-    setEditingProject(null);
-    setIsModalOpen(true);
-  };
-
-  const handleEditProject = (project: any) => {
-    setEditingProject(project);
-    setIsModalOpen(true);
-  };
 
   const clearFilters = () => {
     setSearchTerm("");
@@ -66,9 +54,12 @@ export default function Dashboard() {
     setSortBy("updated");
     setCurrentPage(1);
   };
+
   /*-----------Data--------------------------------------------------------------------*/
-  const System = useSystemsx();
+  const token = CookiesService.get("UserToken");
+  const System = useSystems();
   const Systems = System.data?.data.systems;
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
@@ -88,15 +79,13 @@ export default function Dashboard() {
                 Manage, organize, and showcase your development projects
               </p>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleCreateProject}
+            <Link
+              to="create"
               className="bg-white text-[#022639] hover:bg-gray-50 px-8 py-4 rounded-xl font-bold transition-all duration-300 flex items-center gap-3 shadow-lg"
             >
               <Plus className="w-5 h-5" />
               New Project
-            </motion.button>
+            </Link>
           </motion.div>
         </div>
       </section>
@@ -233,7 +222,7 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Projects Grid */}
           <AnimatePresence mode="wait">
-            {paginatedProjects.length > 0 ? (
+            {/* {paginatedProjects.length > 0 ? (
               <motion.div
                 key={currentPage}
                 initial={{ opacity: 0, y: 20 }}
@@ -299,28 +288,17 @@ export default function Dashboard() {
                   </button>
                 </div>
               </motion.div>
-            )}
+            )} */}
           </AnimatePresence>
 
           {/* Pagination */}
           <Pagination
             currentPage={currentPage}
             setCurrentPage={setCurrentPage}
-            totalPages={totalPages}
+            totalPages={111}
           />
         </div>
       </section>
-
-      {/* Create/Edit Project Modal */}
-      <AnimatePresence>
-        {isModalOpen && (
-          <ProjectModal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            project={editingProject}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 }

@@ -9,7 +9,7 @@ const Inputs = forwardRef<HTMLInputElement, IProps>(
     return (
       <input
         ref={ref}
-        className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent transition-colors duration-200"
+        className="w-full px-4 py-3 border border-gray-400 rounded-xl focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none transition-all"
         {...rest}
       />
     );
