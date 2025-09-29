@@ -1,6 +1,7 @@
 import FeaturesSection from "../../components/home/FeaturesSection";
 import CaegoriesSection from "../../components/home/CaegoriesSection";
 import HeroSection from "../../components/home/HeroSection";
+import SessionGrid from "../../components/home/SessionGrid";
 
 export default function HomePage() {
   return (
@@ -10,10 +11,9 @@ export default function HomePage() {
       {/* ENHANCED CATEGORIES SECTION */}
       <CaegoriesSection />
 
-      {/* ENHANCED Session SECTION */}
-      {/* <div className="my-16">
+      <div className="my-16">
         <SessionGrid />
-      </div>  */}
+      </div>
 
       {/* ENHANCED FEATURES SECTION */}
       <FeaturesSection />

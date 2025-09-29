@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { FiArrowRight } from "react-icons/fi";
 import { ISession } from "../../interfaces";
+import { categoriess } from "../../data/data";
 interface IProps {
   project: ISession;
   onClick: () => void;
@@ -14,6 +15,10 @@ const ExploreProjectCard = ({ onClick, project }: IProps) => {
       .toUpperCase()
       .slice(0, 2);
   };
+  const CategoryIcon = categoriess.find(
+    (x) => x.title === project.system.name
+  )?.Icon;
+
   const allTechnologies = project.requirements.flatMap(
     (req) => req.technologies
   );
@@ -46,12 +51,10 @@ const ExploreProjectCard = ({ onClick, project }: IProps) => {
             </div>
 
             {/* System badge with icon */}
-            <div className="flex items-center gap-2 bg-[#42D5AE]/10 text-[#022639] border border-[#42D5AE]/30 hover:bg-[#42D5AE]/20 transition-colors shrink-0 px-3 py-1 rounded-full">
+            <div className="flex items-center gap-2 bg-[#42D5AE]/10 text-[#022639] border border-[#42D5AE]/30 hover:bg-[#42D5AE]/20 transition-colors shrink-0 px-3 py-1 rounded-full ">
               {/* <CategoryIcon className="w-3 h-3" /> */}
-              <span className="text-xs font-medium">
-                {" "}
-                {project.system.name}
-              </span>
+              {CategoryIcon && <CategoryIcon className="w-3 h-3" />}
+              <span className="text-xs font-medium">{project.system.name}</span>
             </div>
           </div>
         </div>
@@ -79,9 +82,9 @@ const ExploreProjectCard = ({ onClick, project }: IProps) => {
                   </span>
                 );
               })}
-              {project.requirements.length > 4 && (
+              {allTechnologies.length > 4 && (
                 <span className="text-xs bg-gray-50 border border-gray-300 text-gray-600 hover:bg-gray-100 transition-colors px-2 py-1 rounded-full">
-                  +{project.requirements.length - 4} more
+                  +{allTechnologies.length - 4} more
                 </span>
               )}
             </div>

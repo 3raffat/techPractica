@@ -3,36 +3,30 @@ import {
   createRoutesFromElements,
   Route,
 } from "react-router-dom";
-import {
-  LayoutHome,
-  LayoutLogin,
-  Home,
-  Profile,
-  ProjectsLayout,
-} from "../imports";
+import { LayoutHome, LayoutLogin, Home, ProjectsLayout } from "../imports";
 import BorderLayout from "../components/Board/BorderLayout";
 import KanbanBoard from "../components/Board/KanbanBoard";
 import AuthPage from "../pages/User/Auth";
-// import Explore from "../pages/Home/Explore";
-import Dashboard from "../pages/Projects/Dashboard";
+import Dashboard from "../pages/Projects/WorkSpace";
 import Explore from "../pages/Home/Explore";
 import CreateProject from "../pages/Projects/CreateProject";
+import EditProject from "../pages/Projects/EditProject";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
     <>
       <Route path="/" element={<LayoutHome />}>
         <Route index element={<Home />} />
-        <Route path="Explore" element={<Explore />} />
-        <Route path="Explore/:category" element={<Explore />} />
-
-        <Route path="dashboard" element={<ProjectsLayout />}>
+        <Route path="explore" element={<Explore />} />
+        <Route path="explore/:category" element={<Explore />} />
+        <Route path="workspace" element={<ProjectsLayout />}>
           <Route index element={<Dashboard />} />
-          <Route path="create" element={<CreateProject />} />
+          <Route path="session/new" element={<CreateProject />} />
+          <Route path="session/:id/edit" element={<EditProject />} />
         </Route>
 
         {/* <Route path="/Requests/:id" element={<SessionRequests />} /> */}
-        <Route path="Profile" element={<Profile />} />
+        {/* <Route path="Profile" element={<Profile />} /> */}
       </Route>
 
       <Route path="auth" element={<LayoutLogin />}>

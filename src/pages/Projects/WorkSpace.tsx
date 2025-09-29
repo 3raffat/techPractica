@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Pagination from "../../components/NewPagination";
-import { Filter, Plus, Search } from "lucide-react";
-import { ISystem } from "../../interfaces";
+import { Filter, FolderOpen, Plus, Search } from "lucide-react";
+import { ISessionsResponse, ISystem } from "../../interfaces";
 import { useSystems } from "../../api";
-import { CookiesService } from "../../imports";
-import { Link, useNavigate } from "react-router-dom";
+import { CookiesService, useAuthQuery } from "../../imports";
+import { Link } from "react-router-dom";
+import { WorkSpaceProjectCard } from "../../components/Cards/WorkSpaceProjectCard";
 
 const statuses = ["All", "draft", "in-progress", "completed"];
 const visibilities = ["All", "public", "private"];
@@ -33,7 +34,7 @@ function useIsDesktop(breakpoint = 1024) {
 
 // Create/Edit Project Modal
 
-export default function Dashboard() {
+export default function WorkSpace() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
@@ -43,7 +44,6 @@ export default function Dashboard() {
   const [showFilters, setShowFilters] = useState(false);
 
   const isDesktop = useIsDesktop();
-  const Navigate = useNavigate();
   /*-----------Handlers--------------------------------------------------------------------*/
 
   const clearFilters = () => {
@@ -59,7 +59,20 @@ export default function Dashboard() {
   const token = CookiesService.get("UserToken");
   const System = useSystems();
   const Systems = System.data?.data.systems;
-
+  const useExploreSession = () =>
+    useAuthQuery<ISessionsResponse>({
+      queryKey: [`SessionData-${currentPage}`],
+      url: `/sessions/by-user?size=${ITEMS_PER_PAGE}&page=${currentPage - 1}`,
+      config: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    });
+  const usersession = useExploreSession();
+  const Sessionlength = usersession.data?.data.sessions.length ?? 0;
+  const SessionData = usersession.data?.data.sessions ?? [];
+  const totalPages = usersession.data?.data.totalPages ?? 0;
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
@@ -73,14 +86,14 @@ export default function Dashboard() {
           >
             <div className="text-white">
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                My Projects
+                Workspace{" "}
               </h1>
               <p className="text-xl text-[#42D5AE]/80 max-w-2xl">
-                Manage, organize, and showcase your development projects
+                Your personal space for managing projects
               </p>
             </div>
             <Link
-              to="create"
+              to="session/new"
               className="bg-white text-[#022639] hover:bg-gray-50 px-8 py-4 rounded-xl font-bold transition-all duration-300 flex items-center gap-3 shadow-lg"
             >
               <Plus className="w-5 h-5" />
@@ -222,7 +235,7 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Projects Grid */}
           <AnimatePresence mode="wait">
-            {/* {paginatedProjects.length > 0 ? (
+            {Sessionlength > 0 ? (
               <motion.div
                 key={currentPage}
                 initial={{ opacity: 0, y: 20 }}
@@ -231,19 +244,14 @@ export default function Dashboard() {
                 transition={{ duration: 0.3 }}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
               >
-                {paginatedProjects.map((project, index) => (
+                {SessionData.map((project, index) => (
                   <motion.div
                     key={project.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
                   >
-                    <ProjectCard
-                      project={project}
-                      onEdit={handleEditProject}
-                      onDelete={handleDeleteProject}
-                      onView={handleViewProject}
-                    />
+                    <WorkSpaceProjectCard project={project} />
                   </motion.div>
                 ))}
               </motion.div>
@@ -279,23 +287,23 @@ export default function Dashboard() {
                       Clear Filters
                     </button>
                   )}
-                  <button
-                    onClick={handleCreateProject}
+                  <Link
+                    to="new"
                     className="px-4 py-2 bg-[#42D5AE] text-white rounded-lg hover:bg-[#38b28d] transition-colors flex items-center gap-2"
                   >
                     <Plus className="w-4 h-4" />
                     Create Project
-                  </button>
+                  </Link>
                 </div>
               </motion.div>
-            )} */}
+            )}
           </AnimatePresence>
 
           {/* Pagination */}
           <Pagination
             currentPage={currentPage}
             setCurrentPage={setCurrentPage}
-            totalPages={111}
+            totalPages={totalPages}
           />
         </div>
       </section>

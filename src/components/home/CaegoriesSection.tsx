@@ -69,7 +69,7 @@ const CaegoriesSection = ({}: IProps) => {
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8"
           >
             {categoriess.map(
-              ({ icon: Icon, title, color, bgColor, hoverBg }, idx) => (
+              ({ Icon, title, color, bgColor, hoverBg }, idx) => (
                 <motion.div
                   key={idx}
                   variants={staggerContainer}
@@ -88,12 +88,12 @@ const CaegoriesSection = ({}: IProps) => {
                           className={`h-10 w-10 ${color} transition-all duration-300 group-hover:scale-110`}
                         />
                       </div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-[#42D5AE] transition-colors duration-300">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-[#42D5AE] transition-colors duration-300">
                         {title}
                       </h3>
-                      <p className="text-sm text-gray-600 font-medium">
+                      {/* <p className="text-sm text-gray-600 font-medium">
                         Learn {title.toLowerCase()} development
-                      </p>
+                      </p> */}
 
                       {/* Hover overlay */}
                       <div className="absolute inset-0 bg-gradient-to-t from-[#42D5AE]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />

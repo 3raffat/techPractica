@@ -1,5 +1,5 @@
 import { ArrowLeft, Save } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   CookiesService,
   ErrorMsg,
@@ -7,32 +7,41 @@ import {
   MultiSelectField,
   SelectField,
 } from "../../imports";
-import type {
+import {
+  Controller,
+  FormProvider,
+  SubmitHandler,
+  useForm,
+  useWatch,
+} from "react-hook-form";
+import {
   ICreateSessionRequest,
   IErrorResponse,
   IField,
   ISystem,
 } from "../../interfaces";
-import {
-  Controller,
-  FormProvider,
-  type SubmitHandler,
-  useForm,
-  useWatch,
-} from "react-hook-form";
+import { useEffect, useMemo } from "react";
 import { useFields, useSystems, useTechnologies } from "../../api";
+import { useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../config/axios.config";
 import toast from "react-hot-toast";
-import { useEffect, useMemo } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
-const CreateProject = () => {
+const EditProject = () => {
+  const { state } = useLocation();
+  console.log(state);
   const Navigate = useNavigate();
   /* ------------------ Form & State ------------------ */
   const queryClient = useQueryClient();
 
-  const methods = useForm<ICreateSessionRequest>();
+  const methods = useForm<ICreateSessionRequest>({
+    defaultValues: {
+      description: state.description ?? "",
+      name: state.name ?? "",
+      system: state.system.id ?? "",
+      isPrivate: state.private ?? "",
+    },
+  });
 
   const token = CookiesService.get("UserToken");
 
@@ -119,7 +128,7 @@ const CreateProject = () => {
   return (
     <>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {/* Header Section */}
+        {" "}
         <div className="mb-10">
           <button
             onClick={() => Navigate("/workspace")}
@@ -128,12 +137,8 @@ const CreateProject = () => {
             <ArrowLeft className="w-4 h-4" />
             Back to Workspace
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Create New Project
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900">Edit Project</h1>
         </div>
-
-        {/* Form Section */}
         <FormProvider {...methods}>
           <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-8">
             {/* Session Info */}
@@ -272,7 +277,7 @@ const CreateProject = () => {
                 className="w-full px-6 py-3 bg-gradient-to-r from-[#42D5AE] to-[#38b28d] hover:from-[#38b28d] hover:to-[#42D5AE] text-white rounded-xl transition-all duration-300 font-medium flex items-center justify-center gap-2 shadow-md"
               >
                 <Save className="w-4 h-4" />
-                Create Project
+                Edit Project
               </button>
             </div>
           </form>
@@ -281,4 +286,4 @@ const CreateProject = () => {
     </>
   );
 };
-export default CreateProject;
+export default EditProject;

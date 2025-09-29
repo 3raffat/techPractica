@@ -1,26 +1,32 @@
-import { AnimatePresence, motion } from "framer-motion";
-
-import { categoryIcons, techIcons } from "../../data/data";
-import { FaCode } from "react-icons/fa";
+import { motion } from "framer-motion";
 import { Edit3, Eye, Trash2 } from "lucide-react";
-import { SessionsResponse } from "../../interfaces";
+import { ISession } from "../../interfaces";
+import { categoriess } from "../../data/data";
+import { useNavigate } from "react-router-dom";
 
-export function ProjectCard({
+export function WorkSpaceProjectCard({
   project,
-  onEdit,
-  onDelete,
-  onView,
-}: {
-  project: SessionsResponse;
-  onEdit: (project: any) => void;
-  onDelete: (id: number) => void;
-  onView: (id: number) => void;
+}: // onDelete,
+// onView,
+{
+  project: ISession;
+
+  // onDelete: (id: number) => void;
+  // onView: (id: number) => void;
 }) {
-  const getVisibilityColor = (visibility: string) => {
-    return visibility === "public"
+  const Navigate = useNavigate();
+  const getVisibilityColor = (visibility: boolean) => {
+    return visibility
       ? "bg-green-50 text-green-600 border-green-200"
       : "bg-orange-50 text-orange-600 border-orange-200";
   };
+  const allTechnologies = project.requirements.flatMap(
+    (req) => req.technologies
+  );
+
+  const CategoryIcon = categoriess.find(
+    (x) => x.title === project.system.name
+  )?.Icon;
 
   return (
     <motion.div
@@ -43,17 +49,17 @@ export function ProjectCard({
 
               <div className="flex items-center gap-2 mb-3">
                 <div className="flex items-center gap-2 bg-[#42D5AE]/10 text-[#022639] border border-[#42D5AE]/30 px-2 py-1 rounded-full">
-                  <CategoryIcon className="w-3 h-3" />
+                  {CategoryIcon && <CategoryIcon className="w-3 h-3" />}
                   <span className="text-xs font-medium">
-                    {project.category}
+                    {project.system.name}
                   </span>
                 </div>
                 <span
                   className={`text-xs px-2 py-1 rounded-full border ${getVisibilityColor(
-                    project.visibility
+                    project.private
                   )}`}
                 >
-                  {project.visibility}
+                  {project.private ? "Public" : "Private"}
                 </span>
               </div>
             </div>
@@ -72,42 +78,47 @@ export function ProjectCard({
               Technologies
             </h4>
             <div className="flex flex-wrap gap-2">
-              {project.technologies.map((_) => {
-                const TechIcon = techIcons[_];
+              {allTechnologies.slice(0, 4).map((tech: any, index: any) => {
                 return (
                   <span
-                    key={_}
+                    key={index}
                     className="text-xs bg-white border border-[#42D5AE]/30 text-[#022639] hover:bg-[#42D5AE]/10 transition-colors px-2 py-1 rounded-full flex items-center gap-1"
                   >
-                    {TechIcon && <TechIcon className="w-3 h-3" />}
-                    {_}
+                    {tech}
                   </span>
                 );
               })}
+              {allTechnologies.length > 4 && (
+                <span className="text-xs bg-gray-50 border border-gray-300 text-gray-600 hover:bg-gray-100 transition-colors px-2 py-1 rounded-full">
+                  +{allTechnologies.length - 4} more
+                </span>
+              )}
             </div>
           </div>
 
           {/* Actions */}
           <div className="flex gap-2">
             <button
-              onClick={() => onView(project.id)}
+              // onClick={() => onView(project.id)}
               className="flex-1 bg-gradient-to-r from-[#42D5AE] to-[#38b28d] hover:from-[#38b28d] hover:to-[#42D5AE] text-white py-2 px-4 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2"
             >
               <Eye className="w-4 h-4" />
               View
             </button>
             <button
-              onClick={() => onEdit(project)}
+              onClick={() => {
+                Navigate(`session/${project.id}/edit`, { state: project });
+              }}
               className="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2"
             >
               <Edit3 className="w-4 h-4" />
               Edit
             </button>
             <button
-              onClick={() => {
-                onDelete(project.id);
-              }}
-              className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 text-red-600 flex items-center gap-2"
+              // onClick={() => {
+              //   onDelete(project.id);
+              // }}
+              className=" hover:bg-red-100 text-red-500 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2"
             >
               <Trash2 className="w-4 h-4" />
               Delete

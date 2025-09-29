@@ -41,13 +41,13 @@ const AuthPage = () => {
     try {
       await axiosInstance.post("/auth/register", data);
       toast.success("Registration successful!", {
-        position: "top-center",
+        position: "top-right",
         duration: 2000,
       });
     } catch (error) {
       const ErrorObj = error as AxiosError<IErrorResponse>;
       toast.error(`${ErrorObj.response?.data.message}`, {
-        position: "top-center",
+        position: "top-right",
         duration: 2000,
       });
     }
@@ -63,14 +63,14 @@ const AuthPage = () => {
         "/auth/login",
         data
       );
-      toast.success(response.data.message, { position: "top-center" });
+      toast.success(response.data.message, { position: "top-right" });
       CookiesService.set("UserToken", response.data.data.token);
 
       navigate("/");
     } catch (error) {
       const err = error as AxiosError<{ message: string }>;
       toast.error(err.response?.data.message || "Login failed", {
-        position: "top-center",
+        position: "top-right",
         duration: 4000,
       });
     }

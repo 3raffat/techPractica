@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { LogOut, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import { NavLinks } from "../../data/data";
+import { NavLinks } from "../../Router/route";
 
 interface IProps {
   isSidebarOpen: boolean;
@@ -57,7 +57,9 @@ const MobileSidebar = ({
 
               <div className="flex-1 overflow-y-auto py-6">
                 <div className="space-y-2 px-6">
-                  {NavLinks.map(({ label, path, icon: Icon }, index) => {
+                  {NavLinks.filter(
+                    (x) => x.label !== "Workspace" || !!token
+                  ).map(({ label, path, icon: Icon }, index) => {
                     const isActive = pathname === path;
                     return (
                       <motion.div

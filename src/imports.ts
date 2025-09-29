@@ -13,7 +13,6 @@ import LayoutHome from "../src/pages/Home/Layout";
 import LayoutLogin from "../src/pages/User/Layout";
 import Home from "../src/pages/Home/Home";
 import PageNotFound from "../src/pages/User/PageNotFound";
-import Profile from "../src/pages/Home/Profile";
 import ProjectsLayout from "../src/pages/Projects/ProjectsLayout";
 import SessionCardUser from "./components/ui/SessionCardUser.tsx";
 
@@ -24,7 +23,6 @@ export {
   LayoutLogin,
   Home,
   PageNotFound,
-  Profile,
   Inputs,
   Button,
   CookiesService,

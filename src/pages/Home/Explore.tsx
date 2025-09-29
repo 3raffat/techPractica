@@ -43,9 +43,7 @@ export default function Explore() {
   const Systems = System.data?.data.systems;
   const Session = useExploreSessionx();
   const SessionData = Session.data?.data.sessions;
-  console.log(SessionData);
   const isDesktop = useIsDesktop();
-
   // Reset page when filters change
   const handleFilterChange = () => {
     setCurrentPage(1);
