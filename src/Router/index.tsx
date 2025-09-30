@@ -11,14 +11,19 @@ import EditSession from "../pages/Sessions/EditSession";
 import AuthPage from "../pages/User/Auth";
 import KanbanBoard from "../components/Board/KanbanBoard";
 import HorizontalLayout from "../components/Board/BorderLayout";
+import SessionDetails from "../pages/Sessions/SessionDetails";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
     <>
       <Route path="/" element={<LayoutHome />}>
         <Route index element={<Home />} />
-        <Route path="explore" element={<Explore />} />
-        <Route path="explore/:category" element={<Explore />} />
+
+        <Route path="explore" element={<ProjectsLayout />}>
+          <Route index element={<Explore />} />
+          <Route path="session/:id" element={<SessionDetails />} />
+        </Route>
+
         <Route path="workspace" element={<ProjectsLayout />}>
           <Route index element={<WorkSpace />} />
           <Route path="session/new" element={<CreateSession />} />

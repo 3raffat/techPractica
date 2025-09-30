@@ -40,7 +40,7 @@ const ExploreSessionCard = ({ onClick, project }: IProps) => {
                 {project.name}
               </h3>
               {/* Owner info with avatar */}
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 ">
                 <div className="h-6 w-6 rounded-full bg-[#42D5AE]/10 text-[#022639] flex items-center justify-center text-xs font-medium">
                   {getInitials(project.ownerFullName)}
                 </div>
@@ -62,7 +62,7 @@ const ExploreSessionCard = ({ onClick, project }: IProps) => {
         {/* Content section */}
         <div className="p-6">
           {/* Description */}
-          <div className="text-gray-600 text-sm mb-6 line-clamp-3 leading-relaxed">
+          <div className="text-gray-600 text-sm mb-6 line-clamp-3 leading-relaxed break-words">
             {project.description}
           </div>
 
@@ -72,7 +72,7 @@ const ExploreSessionCard = ({ onClick, project }: IProps) => {
               Technologies
             </h4>
             <div className="flex flex-wrap gap-2">
-              {allTechnologies.slice(0, 4).map((tech: any, index: any) => {
+              {allTechnologies.slice(0, 5).map((tech: any, index: any) => {
                 return (
                   <span
                     key={index}

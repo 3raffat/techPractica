@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiSearch, FiFilter, FiGrid, FiList, FiSliders } from "react-icons/fi";
 
-import { useNavigate } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import { useSystems } from "../../api";
 import ExploreProjectCard from "../../components/Cards/ExploreSessionCard";
 import Pagination from "../../components/Pagination";
@@ -239,7 +239,11 @@ export default function Explore() {
                   >
                     <ExploreProjectCard
                       project={Session}
-                      onClick={() => router(`/projects/${Session.id}`)}
+                      onClick={() =>
+                        router(`/explore/session/${Session.id}`, {
+                          state: { session: Session },
+                        })
+                      }
                     />
                   </motion.div>
                 ))}

@@ -41,7 +41,7 @@ export function WorkSpaceSessionCard({ onDelete, project }: IProps) {
                 </h3>
               </div>
 
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2">
                 <div className="flex items-center gap-2 bg-[#42D5AE]/10 text-[#022639] border border-[#42D5AE]/30 px-2 py-1 rounded-full">
                   {CategoryIcon && <CategoryIcon className="w-3 h-3" />}
                   <span className="text-xs font-medium">
@@ -62,7 +62,7 @@ export function WorkSpaceSessionCard({ onDelete, project }: IProps) {
 
         {/* Content */}
         <div className="p-6">
-          <p className="text-gray-600 text-sm mb-6 line-clamp-3 leading-relaxed">
+          <p className="text-gray-600 text-sm mb-6 line-clamp-4 leading-relaxed break-words">
             {project.description}
           </p>
 
@@ -72,7 +72,7 @@ export function WorkSpaceSessionCard({ onDelete, project }: IProps) {
               Technologies
             </h4>
             <div className="flex flex-wrap gap-2">
-              {allTechnologies.slice(0, 4).map((tech: any, index: any) => {
+              {allTechnologies.slice(0, 5).map((tech: any, index: any) => {
                 return (
                   <span
                     key={index}
