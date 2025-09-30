@@ -197,3 +197,24 @@ export interface ProgrammingShapeProps {
   opacity?: number;
 }
 /*-------------------------------------------------------------------------------------------------- */
+export interface SessionResponse {
+  data: {
+    id: string;
+    name: string;
+    description: string;
+    status: string;
+    system: {
+      id: string;
+      name: string;
+    };
+    requirements: {
+      requirementId: string;
+      field: string;
+      technologies: string[];
+    }[];
+    ownerFullName: string | null;
+    private: boolean;
+  };
+  status: number;
+  message: string;
+}

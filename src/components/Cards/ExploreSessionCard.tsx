@@ -6,7 +6,7 @@ interface IProps {
   project: ISession;
   onClick: () => void;
 }
-const ExploreProjectCard = ({ onClick, project }: IProps) => {
+const ExploreSessionCard = ({ onClick, project }: IProps) => {
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -102,4 +102,4 @@ const ExploreProjectCard = ({ onClick, project }: IProps) => {
     </motion.div>
   );
 };
-export default ExploreProjectCard;
+export default ExploreSessionCard;

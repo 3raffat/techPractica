@@ -4,8 +4,8 @@ import { FiSearch, FiFilter, FiGrid, FiList, FiSliders } from "react-icons/fi";
 
 import { useNavigate } from "react-router-dom";
 import { useSystems } from "../../api";
-import ExploreProjectCard from "../../components/Cards/ExploreProjectCard";
-import Pagination from "../../components/NewPagination";
+import ExploreProjectCard from "../../components/Cards/ExploreSessionCard";
+import Pagination from "../../components/Pagination";
 import { ISession, ISystem, ISessionsResponse } from "../../interfaces";
 import { useAuthQuery } from "../../imports";
 
@@ -33,16 +33,17 @@ export default function Explore() {
   const [showFilters, setShowFilters] = useState(false);
   const ITEMS_PER_PAGE = 6;
   /* ----------------Data-------------------------------------- */
-  const useExploreSessionx = () =>
-    useAuthQuery<ISessionsResponse>({
-      queryKey: [`SessionData-${currentPage}`],
-      url: `/sessions/?size=${ITEMS_PER_PAGE}&page=${currentPage - 1}`,
-    });
+  const useExploreSessionx = useAuthQuery<ISessionsResponse>({
+    queryKey: [`SessionData-${currentPage}`],
+    url: `/sessions/?size=${ITEMS_PER_PAGE}&page=${currentPage - 1}`,
+  });
 
   const System = useSystems();
   const Systems = System.data?.data.systems;
-  const Session = useExploreSessionx();
-  const SessionData = Session.data?.data.sessions;
+  const Session = useExploreSessionx;
+  const SessionData = Session.data?.data.sessions ?? [];
+  const Sessionlength = Session.data?.data.sessions.length ?? 0;
+  const totalPages = Session.data?.data.totalPages ?? 0;
   const isDesktop = useIsDesktop();
   // Reset page when filters change
   const handleFilterChange = () => {
@@ -216,7 +217,7 @@ export default function Explore() {
 
           {/* Projects Grid/List */}
           <AnimatePresence mode="wait">
-            {Session.data?.data?.totalItems! > 0 ? (
+            {Sessionlength > 0 ? (
               <motion.div
                 key={`${viewMode}-${currentPage}`}
                 initial={{ opacity: 0, y: 20 }}
@@ -271,7 +272,7 @@ export default function Explore() {
           <Pagination
             currentPage={currentPage}
             setCurrentPage={setCurrentPage}
-            totalPages={Session.data?.data?.totalPages!}
+            totalPages={totalPages}
           />
         </div>
       </section>

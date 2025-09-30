@@ -1,11 +1,12 @@
 import { ArrowLeft, Save } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   CookiesService,
   ErrorMsg,
   Inputs,
   MultiSelectField,
   SelectField,
+  useAuthQuery,
 } from "../../imports";
 import {
   Controller,
@@ -15,10 +16,10 @@ import {
   useWatch,
 } from "react-hook-form";
 import {
-  ICreateSessionRequest,
   IErrorResponse,
   IField,
   ISystem,
+  SessionResponse,
 } from "../../interfaces";
 import { useEffect, useMemo } from "react";
 import { useFields, useSystems, useTechnologies } from "../../api";
@@ -26,29 +27,65 @@ import { useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../config/axios.config";
 import toast from "react-hot-toast";
 import { AxiosError } from "axios";
+import { motion } from "framer-motion";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { SessionSchema } from "../../validation";
+import { InferType } from "yup";
 
-const EditProject = () => {
-  const { state } = useLocation();
-  console.log(state);
+const EditSession = () => {
+  const { id } = useParams();
   const Navigate = useNavigate();
-  /* ------------------ Form & State ------------------ */
-  const queryClient = useQueryClient();
-
-  const methods = useForm<ICreateSessionRequest>({
-    defaultValues: {
-      description: state.description ?? "",
-      name: state.name ?? "",
-      system: state.system.id ?? "",
-      isPrivate: state.private ?? "",
-    },
-  });
-
-  const token = CookiesService.get("UserToken");
-
   /* ------------------ Fetch Data ------------------ */
   const Systems = useSystems().data?.data.systems;
   const Fields = useFields().data?.data;
   const Technology = useTechnologies().data?.data.technologies ?? [];
+
+  /* ------------------ Form & State ------------------ */
+  const token = CookiesService.get("UserToken");
+
+  const queryClient = useQueryClient();
+  const UserSession = useAuthQuery<SessionResponse>({
+    queryKey: [`UserSession`],
+    url: `/sessions/by-id/${id}`,
+    config: {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  });
+
+  const session = UserSession ?? [];
+  const SessionData = session?.data?.data;
+  const fieldName = SessionData?.requirements.map((x) => x.field);
+  const TechNames = SessionData?.requirements.map((x) => x.technologies).join();
+
+  const fieldIds = Array.from(
+    new Set(
+      Technology.flatMap((tech) => tech.fields)
+        .filter((field) => fieldName?.includes(field.name))
+        .map((field) => field.id)
+    )
+  );
+  const techIds = Array.from(
+    new Set(
+      Technology.filter((tech) => TechNames?.includes(tech.name)).map(
+        (tech) => tech.id
+      )
+    )
+  );
+  type EdiitSession = InferType<typeof SessionSchema>;
+
+  const methods = useForm<EdiitSession>({
+    resolver: yupResolver(SessionSchema),
+    defaultValues: {
+      description: SessionData?.description ?? "",
+      name: SessionData?.name ?? "",
+      system: SessionData?.system.id ?? "",
+      isPrivate: SessionData?.private ?? false,
+      field: fieldIds,
+      technologies: techIds,
+    },
+  });
 
   /* ------------------ Watch Fields & Technologies ------------------ */
   const selectedFields =
@@ -67,7 +104,7 @@ const EditProject = () => {
   /* ------------------ Keep Selected Technologies Valid ------------------ */
   useEffect(() => {
     const allowedIds = FilterTech.map((t) => t.id);
-    const updatedTech = selectedTechs.filter((id) => allowedIds.includes(id));
+    const updatedTech = selectedTechs.filter((id) => allowedIds.includes(id!));
 
     if (updatedTech.length !== selectedTechs.length) {
       methods.setValue("technologies", updatedTech, {
@@ -78,7 +115,10 @@ const EditProject = () => {
   }, [FilterTech, selectedTechs, methods]);
 
   /*-------------------------------------------------------------------------------*/
-  const onSubmit: SubmitHandler<ICreateSessionRequest> = async (data) => {
+
+  /*-------------------------------------------------------------------------------*/
+
+  const onSubmit: SubmitHandler<EdiitSession> = async (data) => {
     const { name, description, system, isPrivate } = data;
     const requirements = data.field.map((fieldId) => {
       const techForField = Technology.filter(
@@ -102,14 +142,14 @@ const EditProject = () => {
     };
 
     try {
-      await axiosInstance.post("/sessions/", payload, {
+      await axiosInstance.put(`/sessions/${id}`, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       methods.reset();
       Navigate("/workspace");
-      toast.success("Session created successfully", {
+      toast.success("Session Update successfully", {
         position: "top-right",
         duration: 1000,
       });
@@ -127,18 +167,34 @@ const EditProject = () => {
   };
   return (
     <>
+      <div className=" bg-gray-50">
+        <section className="bg-gradient-to-r from-[#42D5AE] to-[#022639] py-12">
+          <div className="max-w-4xl mx-50 px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="flex items-center gap-4 text-white"
+            >
+              <button
+                onClick={() => Navigate("/workspace")}
+                className="p-2 rounded-full hover:bg-white/10 transition-colors"
+              >
+                <ArrowLeft className="w-6 h-6" />
+              </button>
+              <div>
+                <h1 className="text-3xl md:text-4xl font-bold mb-2">
+                  Edit Project
+                </h1>
+                <p className="text-[#42D5AE]/80">
+                  Update your project details and manage its requirements easily
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {" "}
-        <div className="mb-10">
-          <button
-            onClick={() => Navigate("/workspace")}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-4"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Workspace
-          </button>
-          <h1 className="text-3xl font-bold text-gray-900">Edit Project</h1>
-        </div>
         <FormProvider {...methods}>
           <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-8">
             {/* Session Info */}
@@ -178,10 +234,8 @@ const EditProject = () => {
                   />
                 )}
               </div>
-            </div>
 
-            {/* Project Details */}
-            <div className="bg-white shadow-sm rounded-xl p-6 space-y-6">
+              {/* Project Details */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Category */}
                 <div>
@@ -286,4 +340,4 @@ const EditProject = () => {
     </>
   );
 };
-export default EditProject;
+export default EditSession;

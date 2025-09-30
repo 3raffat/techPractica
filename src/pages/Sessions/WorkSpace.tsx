@@ -1,12 +1,17 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Pagination from "../../components/NewPagination";
+import Pagination from "../../components/Pagination";
 import { Filter, FolderOpen, Plus, Search } from "lucide-react";
-import { ISessionsResponse, ISystem } from "../../interfaces";
+import { IErrorResponse, ISessionsResponse, ISystem } from "../../interfaces";
 import { useSystems } from "../../api";
 import { CookiesService, useAuthQuery } from "../../imports";
 import { Link } from "react-router-dom";
-import { WorkSpaceProjectCard } from "../../components/Cards/WorkSpaceProjectCard";
+import { WorkSpaceSessionCard } from "../../components/Cards/WorkSpaceSessionCard";
+import axiosInstance from "../../config/axios.config";
+import toast from "react-hot-toast";
+import { AxiosError } from "axios";
+import DeleteSessionModel from "../../components/DeleteSessionModel";
+import { useQueryClient } from "@tanstack/react-query";
 
 const statuses = ["All", "draft", "in-progress", "completed"];
 const visibilities = ["All", "public", "private"];
@@ -32,8 +37,6 @@ function useIsDesktop(breakpoint = 1024) {
   return isDesktop;
 }
 
-// Create/Edit Project Modal
-
 export default function WorkSpace() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -42,10 +45,12 @@ export default function WorkSpace() {
   const [sortBy, setSortBy] = useState("updated");
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
-
+  const [SessionId, setSessionId] = useState<string>();
+  const [OpenDeleteModal, setOpenDeleteModal] = useState(false);
   const isDesktop = useIsDesktop();
-  /*-----------Handlers--------------------------------------------------------------------*/
 
+  /*-----------Handlers--------------------------------------------------------------------*/
+  const queryClient = useQueryClient();
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedCategory("All");
@@ -54,25 +59,48 @@ export default function WorkSpace() {
     setSortBy("updated");
     setCurrentPage(1);
   };
-
+  const openDeleteModal = (id: string) => {
+    setSessionId(id);
+    setOpenDeleteModal(true);
+  };
+  const closeDeleteModal = () => setOpenDeleteModal(false);
+  const onSubmitRemoveSession = async () => {
+    try {
+      const response = await axiosInstance.delete(`/sessions/${SessionId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      queryClient.invalidateQueries({
+        queryKey: [`SessionData-${currentPage}`],
+      });
+      setOpenDeleteModal(false);
+      toast.success("Session removed successfully", { position: "top-right" });
+    } catch (error) {
+      const err = error as AxiosError<IErrorResponse>;
+      toast.error(`${err.response?.data.message}`, {
+        position: "top-right",
+        duration: 2000,
+      });
+    }
+  };
   /*-----------Data--------------------------------------------------------------------*/
   const token = CookiesService.get("UserToken");
   const System = useSystems();
   const Systems = System.data?.data.systems;
-  const useExploreSession = () =>
-    useAuthQuery<ISessionsResponse>({
-      queryKey: [`SessionData-${currentPage}`],
-      url: `/sessions/by-user?size=${ITEMS_PER_PAGE}&page=${currentPage - 1}`,
-      config: {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+  const useExploreSession = useAuthQuery<ISessionsResponse>({
+    queryKey: [`SessionData-${currentPage}`],
+    url: `/sessions/by-user?size=${ITEMS_PER_PAGE}&page=${currentPage - 1}`,
+    config: {
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
-    });
-  const usersession = useExploreSession();
+    },
+  });
+  const usersession = useExploreSession;
   const Sessionlength = usersession.data?.data.sessions.length ?? 0;
   const SessionData = usersession.data?.data.sessions ?? [];
   const totalPages = usersession.data?.data.totalPages ?? 0;
+  /*-------------------------------------------------------------------------------*/
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
@@ -251,7 +279,10 @@ export default function WorkSpace() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
                   >
-                    <WorkSpaceProjectCard project={project} />
+                    <WorkSpaceSessionCard
+                      project={project}
+                      onDelete={() => openDeleteModal(project.id)}
+                    />
                   </motion.div>
                 ))}
               </motion.div>
@@ -307,6 +338,11 @@ export default function WorkSpace() {
           />
         </div>
       </section>
+      <DeleteSessionModel
+        OpenDeleteModal={OpenDeleteModal}
+        closeDeleteModal={closeDeleteModal}
+        onSubmitRemoveSession={onSubmitRemoveSession}
+      />
     </div>
   );
 }

@@ -118,7 +118,7 @@ const HeroSection = ({}: IProps) => {
                 boxShadow: "0 20px 40px rgba(66, 213, 174, 0.3)",
               }}
               onClick={() => {
-                navigate("/Explore");
+                navigate("/explore");
               }}
               whileTap={{ scale: 0.95 }}
               className="bg-gradient-to-r from-[#42D5AE] to-[#38b28d] hover:from-[#38b28d] hover:to-[#42D5AE] text-white px-10 py-4 text-xl rounded-xl font-bold transition-all duration-300 flex items-center gap-3 shadow-xl"

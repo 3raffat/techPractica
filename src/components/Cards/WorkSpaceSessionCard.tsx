@@ -3,20 +3,14 @@ import { Edit3, Eye, Trash2 } from "lucide-react";
 import { ISession } from "../../interfaces";
 import { categoriess } from "../../data/data";
 import { useNavigate } from "react-router-dom";
-
-export function WorkSpaceProjectCard({
-  project,
-}: // onDelete,
-// onView,
-{
+interface IProps {
   project: ISession;
-
-  // onDelete: (id: number) => void;
-  // onView: (id: number) => void;
-}) {
+  onDelete: (id: string) => void;
+}
+export function WorkSpaceSessionCard({ onDelete, project }: IProps) {
   const Navigate = useNavigate();
   const getVisibilityColor = (visibility: boolean) => {
-    return visibility
+    return !visibility
       ? "bg-green-50 text-green-600 border-green-200"
       : "bg-orange-50 text-orange-600 border-orange-200";
   };
@@ -59,7 +53,7 @@ export function WorkSpaceProjectCard({
                     project.private
                   )}`}
                 >
-                  {project.private ? "Public" : "Private"}
+                  {project.private ? "Private" : "Public"}
                 </span>
               </div>
             </div>
@@ -107,7 +101,7 @@ export function WorkSpaceProjectCard({
             </button>
             <button
               onClick={() => {
-                Navigate(`session/${project.id}/edit`, { state: project });
+                Navigate(`session/${project.id}/edit`);
               }}
               className="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2"
             >
@@ -115,9 +109,9 @@ export function WorkSpaceProjectCard({
               Edit
             </button>
             <button
-              // onClick={() => {
-              //   onDelete(project.id);
-              // }}
+              onClick={() => {
+                onDelete(project.id);
+              }}
               className=" hover:bg-red-100 text-red-500 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2"
             >
               <Trash2 className="w-4 h-4" />

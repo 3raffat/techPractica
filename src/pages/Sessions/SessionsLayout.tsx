@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 
-const ProjectsLayout = () => {
+const SessionsLayout = () => {
   return (
     <div>
       <Outlet />
@@ -8,4 +8,4 @@ const ProjectsLayout = () => {
   );
 };
 
-export default ProjectsLayout;
+export default SessionsLayout;

@@ -42,30 +42,40 @@ export const loginSchema = yup
       .max(100, "Must be 100 characters or less"),
   })
   .required();
+export interface ICreateSessionRequest {
+  name: string;
+  description: string;
+  isPrivate: boolean;
+  system: string;
+  field: string[];
+  technologies: string[];
+}
+export const SessionSchema = yup.object({
+  name: yup
+    .string()
+    .required("Name is required")
+    .min(5, "Name must be at least 5 characters")
+    .max(20, "Name must be at most 20 characters"),
 
-export const createSessionSchema = yup.object({
-  name: yup.string().required("Name is required"),
-  description: yup.string().required("Description is required"),
+  description: yup
+    .string()
+    .required("Description is required")
+    .min(250, "Description must be at least 250 characters")
+    .max(1000, "Description must be at most 1000 characters"),
+
   isPrivate: yup.boolean().required("isPrivate is required"),
   system: yup
     .string()
-    .uuid("System must be a valid UUID")
-    .required("System is required"),
-  requirements: yup
+    .required("System is required")
+    .uuid("System must be a valid UUID"),
+  field: yup
     .array()
-    .of(
-      yup.object({
-        field: yup
-          .string()
-          .uuid("Field must be a valid UUID")
-          .required("Field is required"),
-        technologies: yup
-          .array()
-          .of(yup.string().uuid("Technology must be a valid UUID").required())
-          .min(1, "At least one technology is required")
-          .required("Technologies are required"),
-      })
-    )
-    .min(1, "At least one requirement is required")
-    .required("Requirements are required"),
+    .required("Fields are required")
+    .of(yup.string().uuid("Field must be a valid UUID"))
+    .min(1, "At least one field is required"),
+  technologies: yup
+    .array()
+    .required("Technologies are required")
+    .of(yup.string().uuid("Technology must be a valid UUID"))
+    .min(1, "At least one technology is required"),
 });
