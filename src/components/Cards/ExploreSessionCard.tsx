@@ -1,22 +1,12 @@
 import { motion } from "framer-motion";
 import { FiArrowRight } from "react-icons/fi";
 import { ISession } from "../../interfaces";
-import { categoriess } from "../../data/data";
+import { categoriess, getInitials, getUserColor } from "../../data/data";
 interface IProps {
   project: ISession;
   onClick: () => void;
 }
 const ExploreSessionCard = ({ onClick, project }: IProps) => {
-  function getInitials(name?: string): string {
-    if (!name) return "";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  }
-
   const CategoryIcon = categoriess.find(
     (x) => x.title === project.system.name
   )?.Icon;
@@ -43,7 +33,11 @@ const ExploreSessionCard = ({ onClick, project }: IProps) => {
               </h3>
               {/* Owner info with avatar */}
               <div className="flex items-center gap-2 ">
-                <div className="h-6 w-6 rounded-full bg-[#42D5AE]/10 text-[#022639] flex items-center justify-center text-xs font-medium">
+                <div
+                  className={`h-6 w-6 rounded-full ${getUserColor(
+                    project.ownerFullName
+                  )} flex items-center justify-center text-xs font-medium`}
+                >
                   {getInitials(project.ownerFullName)}
                 </div>
                 <span className="text-sm text-gray-600">

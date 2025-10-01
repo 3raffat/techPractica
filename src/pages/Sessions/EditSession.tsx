@@ -1,7 +1,5 @@
-import { ArrowLeft, Save } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  CookiesService,
   ErrorMsg,
   Inputs,
   MultiSelectField,
@@ -31,6 +29,9 @@ import { motion } from "framer-motion";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { SessionSchema } from "../../validation";
 import { InferType } from "yup";
+import { LuArrowLeft } from "react-icons/lu";
+import { IoSaveOutline } from "react-icons/io5";
+import { useSessionStorage } from "usehooks-ts";
 
 const EditSession = () => {
   const { id } = useParams();
@@ -41,7 +42,7 @@ const EditSession = () => {
   const Technology = useTechnologies().data?.data.technologies ?? [];
 
   /* ------------------ Form & State ------------------ */
-  const token = CookiesService.get("UserToken");
+  const [token] = useSessionStorage("token", "");
 
   const queryClient = useQueryClient();
   const UserSession = useAuthQuery<SessionResponse>({
@@ -180,7 +181,7 @@ const EditSession = () => {
                 onClick={() => Navigate("/workspace")}
                 className="p-2 rounded-full hover:bg-white/10 transition-colors"
               >
-                <ArrowLeft className="w-6 h-6" />
+                <LuArrowLeft className="w-6 h-6" />
               </button>
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold mb-2">
@@ -330,7 +331,7 @@ const EditSession = () => {
                 type="submit"
                 className="w-full px-6 py-3 bg-gradient-to-r from-[#42D5AE] to-[#38b28d] hover:from-[#38b28d] hover:to-[#42D5AE] text-white rounded-xl transition-all duration-300 font-medium flex items-center justify-center gap-2 shadow-md"
               >
-                <Save className="w-4 h-4" />
+                <IoSaveOutline className="w-4 h-4" />
                 Edit Project
               </button>
             </div>

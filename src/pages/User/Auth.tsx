@@ -1,15 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
-import {
-  Eye,
-  EyeOff,
-  Mail,
-  Lock,
-  User,
-  ArrowRight,
-  Github,
-  Chrome,
-} from "lucide-react";
+import { CiLock, CiUser } from "react-icons/ci";
 import toast from "react-hot-toast";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -23,14 +14,19 @@ import {
   IFormInputLogin,
   IFormInputRegister,
 } from "../../interfaces";
-import { CookiesService, ErrorMsg } from "../../imports";
-
+import { ErrorMsg } from "../../imports";
+import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import { BsArrowRight } from "react-icons/bs";
+import { MdOutlineEmail } from "react-icons/md";
+import { useSessionStorage } from "usehooks-ts";
+import { FiChrome, FiGithub } from "react-icons/fi";
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const [token, setToken] = useSessionStorage("token", "");
   ////////////////////////////////////////////////////////////////////////////////
   const {
     register: registerRegister,
@@ -82,8 +78,7 @@ const AuthPage = () => {
         data
       );
       toast.success(response.data.message, { position: "top-right" });
-      CookiesService.set("UserToken", response.data.data.token);
-
+      setToken(response.data.data.token);
       navigate("/");
     } catch (error) {
       const err = error as AxiosError<{ message: string }>;
@@ -155,7 +150,7 @@ const AuthPage = () => {
           to="/"
           className="flex items-center gap-2 text-[#022639] hover:text-[#42D5AE] transition-colors duration-300 font-medium"
         >
-          <ArrowRight className="w-4 h-4 rotate-180" />
+          <BsArrowRight className="w-4 h-4 rotate-180" />
           Back to Home
         </Link>
       </motion.div>
@@ -236,7 +231,7 @@ const AuthPage = () => {
                       Email
                     </label>
                     <div className="relative">
-                      <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <MdOutlineEmail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                       <input
                         type="email"
                         {...registerLogin("email")}
@@ -255,7 +250,7 @@ const AuthPage = () => {
                       Password
                     </label>
                     <div className="relative">
-                      <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <CiLock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                       <input
                         type={showPassword ? "text" : "password"}
                         {...registerLogin("password")}
@@ -268,9 +263,9 @@ const AuthPage = () => {
                         className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                       >
                         {showPassword ? (
-                          <EyeOff className="w-5 h-5" />
+                          <FaRegEyeSlash className="w-5 h-5" />
                         ) : (
-                          <Eye className="w-5 h-5" />
+                          <FaRegEye className="w-5 h-5" />
                         )}
                       </button>
                     </div>
@@ -310,7 +305,7 @@ const AuthPage = () => {
                     ) : (
                       <>
                         Sign In
-                        <ArrowRight className="w-5 h-5" />
+                        <BsArrowRight className="w-5 h-5" />
                       </>
                     )}
                   </motion.button>
@@ -340,7 +335,7 @@ const AuthPage = () => {
                       Username
                     </label>
                     <div className="relative">
-                      <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <CiUser className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                       <input
                         type="text"
                         {...registerRegister("name")}
@@ -359,7 +354,7 @@ const AuthPage = () => {
                       Email
                     </label>
                     <div className="relative">
-                      <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <MdOutlineEmail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                       <input
                         type="email"
                         {...registerRegister("email")}
@@ -378,7 +373,7 @@ const AuthPage = () => {
                       Password
                     </label>
                     <div className="relative">
-                      <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <CiLock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                       <input
                         type={showPassword ? "text" : "password"}
                         {...registerRegister("password")}
@@ -391,9 +386,9 @@ const AuthPage = () => {
                         className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                       >
                         {showPassword ? (
-                          <EyeOff className="w-5 h-5" />
+                          <FaRegEyeSlash className="w-5 h-5" />
                         ) : (
-                          <Eye className="w-5 h-5" />
+                          <FaRegEye className="w-5 h-5" />
                         )}
                       </button>
                     </div>
@@ -410,7 +405,7 @@ const AuthPage = () => {
                       Confirm Password
                     </label>
                     <div className="relative">
-                      <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <CiLock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                       <input
                         type={showConfirmPassword ? "text" : "password"}
                         className="w-full pl-12 pr-12 py-4 bg-gray-50/50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none transition-all duration-300 text-gray-900 placeholder-gray-500"
@@ -425,9 +420,9 @@ const AuthPage = () => {
                         className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                       >
                         {showConfirmPassword ? (
-                          <EyeOff className="w-5 h-5" />
+                          <FaRegEyeSlash className="w-5 h-5" />
                         ) : (
-                          <Eye className="w-5 h-5" />
+                          <FaRegEye className="w-5 h-5" />
                         )}
                       </button>
                     </div>
@@ -459,7 +454,7 @@ const AuthPage = () => {
                     ) : (
                       <>
                         Create Account
-                        <ArrowRight className="w-5 h-5" />
+                        <BsArrowRight className="w-5 h-5" />
                       </>
                     )}
                   </motion.button>
@@ -483,7 +478,7 @@ const AuthPage = () => {
                 whileTap={{ scale: 0.98 }}
                 className="flex items-center justify-center gap-3 py-3 px-4 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl transition-all duration-300 text-gray-700 font-medium"
               >
-                <Github className="w-5 h-5" />
+                <FiGithub className="w-5 h-5" />
                 GitHub
               </motion.button>
               <motion.button
@@ -491,7 +486,7 @@ const AuthPage = () => {
                 whileTap={{ scale: 0.98 }}
                 className="flex items-center justify-center gap-3 py-3 px-4 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl transition-all duration-300 text-gray-700 font-medium"
               >
-                <Chrome className="w-5 h-5" />
+                <FiChrome className="w-5 h-5" />
                 Google
               </motion.button>
             </div>

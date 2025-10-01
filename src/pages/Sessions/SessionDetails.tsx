@@ -1,12 +1,18 @@
-import { useNavigate, useParams } from "react-router-dom";
-import { CookiesService, useAuthQuery } from "../../imports";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useAuthQuery } from "../../imports";
 import { SessionResponse } from "../../interfaces";
-import { ArrowLeft, BookOpen, Users } from "lucide-react";
+import { getInitials, getUserColor } from "../../data/data";
+import { GoArrowLeft } from "react-icons/go";
+import { PiBookOpenTextLight } from "react-icons/pi";
+import { useSessionStorage } from "usehooks-ts";
 
 export default function ProjectDetailPage() {
   /* ------------------ Fetch Data ------------------ */
-  const token = CookiesService.get("UserToken");
+  const [token] = useSessionStorage("token", "");
   const { id } = useParams();
+  const location = useLocation();
+  const page = location.pathname.split("/")[1] ?? "";
+  console.log();
   const UserSession = useAuthQuery<SessionResponse>({
     queryKey: [`UserSession`],
     url: `/sessions/by-id/${id}`,
@@ -20,17 +26,7 @@ export default function ProjectDetailPage() {
   const SessionData = session?.data?.data;
   const fieldName = SessionData?.requirements.map((x) => x.field);
   const TechNames = SessionData?.requirements.map((x) => x.technologies).flat();
-  console.log(TechNames);
   const router = useNavigate();
-  function getInitials(name?: string): string {
-    if (!name) return "";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 via-gray-100 to-gray-200 flex items-center justify-center px-6 py-12">
@@ -40,10 +36,12 @@ export default function ProjectDetailPage() {
 
         {/* Back Button */}
         <button
-          onClick={() => router("/explore")}
+          onClick={() => {
+            page == "explore" ? router("/explore") : router("/workspace");
+          }}
           className="group flex items-center gap-2 text-gray-600 hover:text-[#42D5AE] transition-colors"
         >
-          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+          <GoArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
           <span className="font-medium">Back</span>
         </button>
 
@@ -61,7 +59,11 @@ export default function ProjectDetailPage() {
 
           <div className="flex items-center gap-2 text-sm text-gray-700">
             <div className="flex items-center gap-2 ">
-              <div className="h-10 w-10 rounded-full bg-[#42D5AE]/10 text-[#022639] flex items-center justify-center text-xs font-medium">
+              <div
+                className={`h-10 w-10 rounded-full ${getUserColor(
+                  SessionData?.ownerFullName!
+                )} flex items-center justify-center text-xs font-medium`}
+              >
                 {getInitials(SessionData?.ownerFullName!)}
               </div>
               <span className="text-xl text-gray-600">
@@ -107,7 +109,7 @@ export default function ProjectDetailPage() {
         {/* Description Full */}
         <div>
           <h2 className="text-xl font-semibold text-gray-900 mb-5 flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-[#42D5AE]" />
+            <PiBookOpenTextLight className="w-5 h-5 text-[#42D5AE]" />
             Description
           </h2>
           <p className="text-gray-700 leading-relaxed break-words">
@@ -115,15 +117,18 @@ export default function ProjectDetailPage() {
           </p>
         </div>
 
-        {/* CTA */}
-        <div className="text-center">
-          <p className="mb-5 text-sm text-gray-600">
-            🚀 Seats are limited – join now!
-          </p>
-          <button className="w-full py-4 bg-gradient-to-r from-[#42D5AE] to-[#38b28d] text-white rounded-xl font-bold shadow-lg hover:opacity-90 transition">
-            Enroll Now
-          </button>
-        </div>
+        {page == "workspace" ? (
+          ""
+        ) : (
+          <div className="text-center">
+            <p className="mb-5 text-sm text-gray-600">
+              🚀 Seats are limited – join now!
+            </p>
+            <button className="w-full py-4 bg-gradient-to-r from-[#42D5AE] to-[#38b28d] text-white rounded-xl font-bold shadow-lg hover:opacity-90 transition">
+              Enroll Now
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

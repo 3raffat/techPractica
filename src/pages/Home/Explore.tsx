@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiSearch, FiFilter, FiGrid, FiList, FiSliders } from "react-icons/fi";
 
-import { Outlet, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useSystems } from "../../api";
 import ExploreProjectCard from "../../components/Cards/ExploreSessionCard";
 import Pagination from "../../components/Pagination";
@@ -101,7 +101,7 @@ export default function Explore() {
             {/* Filter Toggle (Mobile) */}
             <div className="flex items-center gap-4">
               <button
-                //   onClick={() => setShowFilters(!showFilters)}
+                onClick={() => setShowFilters(!showFilters)}
                 className="lg:hidden flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <FiSliders className="h-4 w-4" />

@@ -1,12 +1,7 @@
-import { ArrowLeft, Save } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import {
-  CookiesService,
-  ErrorMsg,
-  Inputs,
-  MultiSelectField,
-  SelectField,
-} from "../../imports";
+import { IoSaveOutline } from "react-icons/io5";
+import { LuArrowLeft } from "react-icons/lu";
+import { ErrorMsg, Inputs, MultiSelectField, SelectField } from "../../imports";
 import type { IErrorResponse, IField, ISystem } from "../../interfaces";
 import {
   Controller,
@@ -25,6 +20,7 @@ import { motion } from "framer-motion";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { SessionSchema } from "../../validation";
 import { InferType } from "yup";
+import { useSessionStorage } from "usehooks-ts";
 
 const CreateSession = () => {
   const Navigate = useNavigate();
@@ -36,7 +32,7 @@ const CreateSession = () => {
     resolver: yupResolver(SessionSchema),
   });
 
-  const token = CookiesService.get("UserToken");
+  const [token] = useSessionStorage("token", null);
 
   /* ------------------ Fetch Data ------------------ */
   const Systems = useSystems().data?.data.systems;
@@ -133,7 +129,7 @@ const CreateSession = () => {
                 onClick={() => Navigate("/workspace")}
                 className="p-2 rounded-full hover:bg-white/10 transition-colors"
               >
-                <ArrowLeft className="w-6 h-6" />
+                <LuArrowLeft className="w-6 h-6" />
               </button>
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold mb-2">
@@ -284,7 +280,7 @@ const CreateSession = () => {
                 type="submit"
                 className="w-full px-6 py-4 bg-gradient-to-r from-[#42D5AE] to-[#38b28d] hover:from-[#38b28d] hover:to-[#42D5AE] text-white rounded-2xl transition-all duration-300 font-semibold flex items-center justify-center gap-2 shadow-lg"
               >
-                <Save className="w-5 h-5" />
+                <IoSaveOutline className="w-5 h-5" />
                 Create Project
               </button>
             </div>

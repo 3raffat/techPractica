@@ -219,3 +219,63 @@ export interface SessionResponse {
   status: number;
   message: string;
 }
+/*-------------------------------------------------------------------------------------------------- */
+export interface IProfileResponse {
+  data: {
+    user: IUser;
+    sessions: ISessionsData;
+  };
+  status: number;
+  message: string;
+}
+
+export interface IUser {
+  id: string;
+  firstName: string;
+  lastName: string;
+  name: string;
+  email: string;
+  skills: ISkill[];
+  socialAccounts: ISocialAccount[];
+  brief: string;
+}
+
+export interface ISkill {
+  id: string;
+  name: string;
+}
+
+export interface ISocialAccount {
+  platform: string;
+  profileUrl: string;
+}
+
+export interface ISessionsData {
+  sessions: ISession[];
+  totalItems: number;
+  totalPages: number;
+  pageSize: number;
+}
+
+export interface ISession {
+  id: string;
+  name: string;
+  description: string;
+  status: string;
+  system: ISystem;
+  requirements: IRequirement[];
+  ownerFullName: string;
+  private: boolean;
+}
+
+export interface ISystem {
+  id: string;
+  name: string;
+}
+
+export interface IRequirement {
+  requirementId: string;
+  field: string;
+  technologies: string[];
+}
+/*-------------------------------------------------------------------------------------------------- */

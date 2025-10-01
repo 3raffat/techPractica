@@ -1,23 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
-import { CookiesService } from "../../imports";
 import Desktop from "./Desktop";
 import RightSection from "./RightSection";
 import MobileSidebar from "./MobileSidebar";
+import { useSessionStorage } from "usehooks-ts";
 
 export default function Navbar() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [token, setToken] = useSessionStorage("token", null);
+
   const pathname = useLocation().pathname;
-  // Get token
-  useEffect(() => {
-    setToken(CookiesService.get("UserToken"));
-  }, []);
 
   const handleLogout = () => {
-    CookiesService.remove("UserToken");
     setToken(null);
     setShowUserMenu(false);
   };

@@ -1,13 +1,13 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { CookiesService } from "../../imports";
 import { NavLinks } from "../../Router/route";
+import { useSessionStorage } from "usehooks-ts";
 
 interface IProps {
   pathname: string;
 }
 const Desktop = ({ pathname }: IProps) => {
-  const token = CookiesService.get("UserToken");
+  const [token] = useSessionStorage("token", null);
   return (
     <>
       <div className="hidden md:flex items-center space-x-1">

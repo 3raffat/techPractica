@@ -1,11 +1,9 @@
-import { CookiesService, useAuthQuery } from "./imports.ts";
+import { useAuthQuery } from "./imports.ts";
 import {
   IFieldsResponse,
   ISystemsResponse,
   ITechnologyResponse,
 } from "./interfaces.ts";
-
-export const token = CookiesService.get("UserToken");
 
 //Tech
 export const useTechnologies = () =>

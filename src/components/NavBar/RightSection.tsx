@@ -1,5 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, LogOut, Menu, User, X } from "lucide-react";
+import { CiMenuBurger } from "react-icons/ci";
+import { FaChevronDown } from "react-icons/fa";
+import { GoX } from "react-icons/go";
+import { LuUser } from "react-icons/lu";
+import { MdLogout } from "react-icons/md";
 import { Link } from "react-router-dom";
 
 interface IProps {
@@ -33,7 +37,7 @@ const RightSection = ({
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#42D5AE] to-[#38b28d] flex items-center justify-center text-white font-semibold text-sm">
                 JD
               </div>
-              <ChevronDown
+              <FaChevronDown
                 className={`w-4 h-4 text-gray-600 transition-transform ${
                   showUserMenu ? "rotate-180" : ""
                 }`}
@@ -69,7 +73,7 @@ const RightSection = ({
                         className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-gray-50 transition-colors"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        <User className="w-4 h-4" />
+                        <LuUser className="w-4 h-4" />
                         Profile
                       </Link>
                     </div>
@@ -78,7 +82,7 @@ const RightSection = ({
                         onClick={handleLogout}
                         className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
                       >
-                        <LogOut className="w-4 h-4" />
+                        <MdLogout className="w-4 h-4" />
                         Logout
                       </button>
                     </div>
@@ -119,7 +123,7 @@ const RightSection = ({
                 exit={{ rotate: 90, opacity: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                <X className="w-5 h-5 text-gray-600" />
+                <GoX className="w-5 h-5 text-gray-600" />
               </motion.div>
             ) : (
               <motion.div
@@ -129,7 +133,7 @@ const RightSection = ({
                 exit={{ rotate: -90, opacity: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                <Menu className="w-5 h-5 text-gray-600" />
+                <CiMenuBurger className="w-5 h-5 text-gray-600" />
               </motion.div>
             )}
           </AnimatePresence>

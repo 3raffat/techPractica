@@ -1,7 +1,7 @@
 import { IconType } from "react-icons";
-import { BsPersonWorkspace } from "react-icons/bs";
-import { FaHome } from "react-icons/fa";
 import { FiCompass } from "react-icons/fi";
+import { LuUser } from "react-icons/lu";
+import { GrHomeRounded } from "react-icons/gr";
 
 interface Inav {
   path: string;
@@ -13,7 +13,7 @@ export const NavLinks: Inav[] = [
   {
     label: "Home",
     path: "/",
-    icon: FaHome,
+    icon: GrHomeRounded,
   },
   {
     label: "Explore",
@@ -23,6 +23,6 @@ export const NavLinks: Inav[] = [
   {
     label: "Workspace",
     path: "/workspace",
-    icon: BsPersonWorkspace,
+    icon: LuUser,
   },
 ];

@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Footer = () => {

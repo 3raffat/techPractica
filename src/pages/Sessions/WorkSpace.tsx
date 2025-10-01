@@ -1,17 +1,29 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Pagination from "../../components/Pagination";
-import { Filter, FolderOpen, Plus, Search } from "lucide-react";
-import { IErrorResponse, ISessionsResponse, ISystem } from "../../interfaces";
+import { HiOutlinePlus } from "react-icons/hi";
+import {
+  IErrorResponse,
+  IProfileResponse,
+  ISession,
+  ISessionsData,
+  ISessionsResponse,
+  ISystem,
+  IUser,
+} from "../../interfaces";
 import { useSystems } from "../../api";
-import { CookiesService, useAuthQuery } from "../../imports";
-import { Link } from "react-router-dom";
+import { useAuthQuery } from "../../imports";
+import { Link, useNavigate } from "react-router-dom";
 import { WorkSpaceSessionCard } from "../../components/Cards/WorkSpaceSessionCard";
 import axiosInstance from "../../config/axios.config";
 import toast from "react-hot-toast";
 import { AxiosError } from "axios";
 import DeleteSessionModel from "../../components/DeleteSessionModel";
 import { useQueryClient } from "@tanstack/react-query";
+import { AiOutlineSearch } from "react-icons/ai";
+import { LuFolderOpen } from "react-icons/lu";
+import { IoFilterOutline } from "react-icons/io5";
+import { useSessionStorage } from "usehooks-ts";
 
 const statuses = ["All", "draft", "in-progress", "completed"];
 const visibilities = ["All", "public", "private"];
@@ -51,6 +63,8 @@ export default function WorkSpace() {
 
   /*-----------Handlers--------------------------------------------------------------------*/
   const queryClient = useQueryClient();
+  const router = useNavigate();
+
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedCategory("All");
@@ -66,7 +80,7 @@ export default function WorkSpace() {
   const closeDeleteModal = () => setOpenDeleteModal(false);
   const onSubmitRemoveSession = async () => {
     try {
-      const response = await axiosInstance.delete(`/sessions/${SessionId}`, {
+      await axiosInstance.delete(`/sessions/${SessionId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       queryClient.invalidateQueries({
@@ -83,7 +97,7 @@ export default function WorkSpace() {
     }
   };
   /*-----------Data--------------------------------------------------------------------*/
-  const token = CookiesService.get("UserToken");
+  const [token] = useSessionStorage("token", "");
   const System = useSystems();
   const Systems = System.data?.data.systems;
   const useExploreSession = useAuthQuery<ISessionsResponse>({
@@ -95,6 +109,7 @@ export default function WorkSpace() {
       },
     },
   });
+
   const usersession = useExploreSession;
   const Sessionlength = usersession.data?.data.sessions.length ?? 0;
   const SessionData = usersession.data?.data.sessions ?? [];
@@ -124,7 +139,7 @@ export default function WorkSpace() {
               to="session/new"
               className="bg-white text-[#022639] hover:bg-gray-50 px-8 py-4 rounded-xl font-bold transition-all duration-300 flex items-center gap-3 shadow-lg"
             >
-              <Plus className="w-5 h-5" />
+              <HiOutlinePlus className="w-5 h-5" />
               New Project
             </Link>
           </motion.div>
@@ -137,7 +152,7 @@ export default function WorkSpace() {
           <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
             {/* Search */}
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <AiOutlineSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <input
                 type="text"
                 placeholder="Search projects..."
@@ -150,10 +165,10 @@ export default function WorkSpace() {
             {/* Filter Toggle */}
             <div className="flex items-center gap-4">
               <button
-                //  onClick={() => setShowFilters(!showFilters)}
+                onClick={() => setShowFilters(!showFilters)}
                 className="lg:hidden flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <Filter className="h-4 w-4" />
+                <IoFilterOutline className="h-4 w-4" />
                 Filters
               </button>
 
@@ -272,16 +287,21 @@ export default function WorkSpace() {
                 transition={{ duration: 0.3 }}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
               >
-                {SessionData.map((project, index) => (
+                {SessionData.map((session, index) => (
                   <motion.div
-                    key={project.id}
+                    key={session.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
                   >
                     <WorkSpaceSessionCard
-                      project={project}
-                      onDelete={() => openDeleteModal(project.id)}
+                      session={session}
+                      onDelete={() => openDeleteModal(session.id)}
+                      onClick={() =>
+                        router(`/workspace/session/${session.id}`, {
+                          state: { session: session },
+                        })
+                      }
                     />
                   </motion.div>
                 ))}
@@ -293,7 +313,7 @@ export default function WorkSpace() {
                 className="text-center py-12"
               >
                 <div className="text-gray-400 mb-4">
-                  <FolderOpen className="h-12 w-12 mx-auto" />
+                  <LuFolderOpen className="h-12 w-12 mx-auto" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
                   No projects found
@@ -322,7 +342,7 @@ export default function WorkSpace() {
                     to="new"
                     className="px-4 py-2 bg-[#42D5AE] text-white rounded-lg hover:bg-[#38b28d] transition-colors flex items-center gap-2"
                   >
-                    <Plus className="w-4 h-4" />
+                    <HiOutlinePlus className="w-4 h-4" />
                     Create Project
                   </Link>
                 </div>
