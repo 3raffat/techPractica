@@ -22,6 +22,15 @@ export default function ProjectDetailPage() {
   const TechNames = SessionData?.requirements.map((x) => x.technologies).flat();
   console.log(TechNames);
   const router = useNavigate();
+  function getInitials(name?: string): string {
+    if (!name) return "";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 via-gray-100 to-gray-200 flex items-center justify-center px-6 py-12">
@@ -51,8 +60,14 @@ export default function ProjectDetailPage() {
           </h1>
 
           <div className="flex items-center gap-2 text-sm text-gray-700">
-            <Users className="w-5 h-5 text-gray-500" />
-            <span>{fieldName?.length} Fields</span>
+            <div className="flex items-center gap-2 ">
+              <div className="h-10 w-10 rounded-full bg-[#42D5AE]/10 text-[#022639] flex items-center justify-center text-xs font-medium">
+                {getInitials(SessionData?.ownerFullName!)}
+              </div>
+              <span className="text-xl text-gray-600">
+                @{SessionData?.ownerFullName!}
+              </span>
+            </div>
           </div>
         </div>
 

@@ -122,6 +122,7 @@ export interface IFormInputRegister {
   name: string;
   email: string;
   password: string;
+  confirmPassword: string;
 }
 export interface IFormInputLogin {
   email: string;

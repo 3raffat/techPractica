@@ -7,14 +7,16 @@ interface IProps {
   onClick: () => void;
 }
 const ExploreSessionCard = ({ onClick, project }: IProps) => {
-  const getInitials = (name: string) => {
+  function getInitials(name?: string): string {
+    if (!name) return "";
     return name
       .split(" ")
       .map((n) => n[0])
       .join("")
       .toUpperCase()
       .slice(0, 2);
-  };
+  }
+
   const CategoryIcon = categoriess.find(
     (x) => x.title === project.system.name
   )?.Icon;

@@ -23,7 +23,7 @@ import {
   IFormInputLogin,
   IFormInputRegister,
 } from "../../interfaces";
-import { CookiesService } from "../../imports";
+import { CookiesService, ErrorMsg } from "../../imports";
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -32,14 +32,24 @@ const AuthPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   ////////////////////////////////////////////////////////////////////////////////
-  const { register: registerRegister, handleSubmit: RegisterSubmit } =
-    useForm<IFormInputRegister>({
-      resolver: yupResolver(registerSchema),
-    });
+  const {
+    register: registerRegister,
+    handleSubmit: RegisterSubmit,
+    formState: RegisterFormState,
+  } = useForm<IFormInputRegister>({
+    resolver: yupResolver(registerSchema),
+  });
 
   const onSubmitRegister: SubmitHandler<IFormInputRegister> = async (data) => {
+    const { email, name, password } = data;
+    const newData = {
+      email,
+      name,
+      password,
+    };
     try {
-      await axiosInstance.post("/auth/register", data);
+      setIsLoading(true);
+      await axiosInstance.post("/auth/register", newData);
       toast.success("Registration successful!", {
         position: "top-right",
         duration: 2000,
@@ -50,15 +60,23 @@ const AuthPage = () => {
         position: "top-right",
         duration: 2000,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
   ///////////////////////////////////////////////////////////////////////////////////
-  const { register: registerLogin, handleSubmit: LoginSubmit } = useForm({
+  const {
+    register: registerLogin,
+    handleSubmit: LoginSubmit,
+    formState: LoginFromState,
+  } = useForm({
     resolver: yupResolver(loginSchema),
   });
 
   const onSubmitLogin: SubmitHandler<IFormInputLogin> = async (data) => {
     try {
+      setIsLoading(true);
+
       const response: LoginAxiosResponse = await axiosInstance.post(
         "/auth/login",
         data
@@ -73,6 +91,8 @@ const AuthPage = () => {
         position: "top-right",
         duration: 4000,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
   ///////////////////////////////////////////////////////////////////////////////////
@@ -219,12 +239,14 @@ const AuthPage = () => {
                       <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                       <input
                         type="email"
-                        required
                         {...registerLogin("email")}
                         className="w-full pl-12 pr-4 py-4 bg-gray-50/50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none transition-all duration-300 text-gray-900 placeholder-gray-500"
                         placeholder="Enter your email"
                       />
                     </div>
+                    {LoginFromState.errors.email && (
+                      <ErrorMsg Msg={LoginFromState.errors.email?.message} />
+                    )}
                   </div>
 
                   {/* Password Field */}
@@ -236,7 +258,6 @@ const AuthPage = () => {
                       <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                       <input
                         type={showPassword ? "text" : "password"}
-                        required
                         {...registerLogin("password")}
                         className="w-full pl-12 pr-12 py-4 bg-gray-50/50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none transition-all duration-300 text-gray-900 placeholder-gray-500"
                         placeholder="Enter your password"
@@ -253,6 +274,9 @@ const AuthPage = () => {
                         )}
                       </button>
                     </div>
+                    {LoginFromState.errors.password && (
+                      <ErrorMsg Msg={LoginFromState.errors.password?.message} />
+                    )}
                   </div>
 
                   {/* Forgot Password */}
@@ -319,12 +343,14 @@ const AuthPage = () => {
                       <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                       <input
                         type="text"
-                        required
                         {...registerRegister("name")}
                         className="w-full pl-12 pr-4 py-4 bg-gray-50/50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none transition-all duration-300 text-gray-900 placeholder-gray-500"
                         placeholder="Choose a username"
                       />
                     </div>
+                    {RegisterFormState.errors.name && (
+                      <ErrorMsg Msg={RegisterFormState.errors.name?.message} />
+                    )}
                   </div>
 
                   {/* Email Field */}
@@ -336,12 +362,14 @@ const AuthPage = () => {
                       <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                       <input
                         type="email"
-                        required
                         {...registerRegister("email")}
                         className="w-full pl-12 pr-4 py-4 bg-gray-50/50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none transition-all duration-300 text-gray-900 placeholder-gray-500"
                         placeholder="Enter your email"
                       />
                     </div>
+                    {RegisterFormState.errors.email && (
+                      <ErrorMsg Msg={RegisterFormState.errors.email?.message} />
+                    )}
                   </div>
 
                   {/* Password Field */}
@@ -353,7 +381,6 @@ const AuthPage = () => {
                       <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                       <input
                         type={showPassword ? "text" : "password"}
-                        required
                         {...registerRegister("password")}
                         className="w-full pl-12 pr-12 py-4 bg-gray-50/50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none transition-all duration-300 text-gray-900 placeholder-gray-500"
                         placeholder="Create a password"
@@ -370,10 +397,15 @@ const AuthPage = () => {
                         )}
                       </button>
                     </div>
+                    {RegisterFormState.errors.password && (
+                      <ErrorMsg
+                        Msg={RegisterFormState.errors.password?.message}
+                      />
+                    )}
                   </div>
 
                   {/* Confirm Password Field */}
-                  {/* <div className="space-y-2">
+                  <div className="space-y-2">
                     <label className="text-sm font-semibold text-gray-700">
                       Confirm Password
                     </label>
@@ -381,16 +413,9 @@ const AuthPage = () => {
                       <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                       <input
                         type={showConfirmPassword ? "text" : "password"}
-                        required
-                        value={registerForm.confirmPassword}
-                        onChange={(e) =>
-                          setRegisterForm({
-                            ...registerForm,
-                            confirmPassword: e.target.value,
-                          })
-                        }
                         className="w-full pl-12 pr-12 py-4 bg-gray-50/50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none transition-all duration-300 text-gray-900 placeholder-gray-500"
                         placeholder="Confirm your password"
+                        {...registerRegister("confirmPassword")}
                       />
                       <button
                         type="button"
@@ -406,24 +431,11 @@ const AuthPage = () => {
                         )}
                       </button>
                     </div>
-                  </div> */}
-
-                  {/* Terms */}
-                  <div className="text-sm text-gray-600 text-center">
-                    By creating an account, you agree to our{" "}
-                    <Link
-                      to="/terms"
-                      className="text-[#42D5AE] hover:text-[#38b28d] transition-colors"
-                    >
-                      Terms of Service
-                    </Link>{" "}
-                    and{" "}
-                    <Link
-                      to="/privacy"
-                      className="text-[#42D5AE] hover:text-[#38b28d] transition-colors"
-                    >
-                      Privacy Policy
-                    </Link>
+                    {RegisterFormState.errors.confirmPassword && (
+                      <ErrorMsg
+                        Msg={RegisterFormState.errors.confirmPassword?.message}
+                      />
+                    )}
                   </div>
 
                   {/* Submit Button */}
