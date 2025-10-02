@@ -1,7 +1,10 @@
 import { CiGlobe } from "react-icons/ci";
 import { getSocialColor, getSocialIcon } from "../../data/data";
-
-const SocialAccountsSection = ({ socialAccounts }: any) => {
+import { ISocialAccount } from "../../interfaces";
+interface IProps {
+  socialAccounts: ISocialAccount[];
+}
+const SocialAccountsSection = ({ socialAccounts }: IProps) => {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
       <div className="flex items-center gap-3 mb-6">
@@ -18,14 +21,14 @@ const SocialAccountsSection = ({ socialAccounts }: any) => {
         </div>
       ) : (
         <div className="flex flex-wrap gap-3">
-          {socialAccounts.map((account: any, index: number) => {
+          {socialAccounts.map((account: ISocialAccount, index: number) => {
             const Icon = getSocialIcon(account.platform);
             const colorClass = getSocialColor(account.platform);
 
             return (
               <a
                 key={index}
-                href={account.url}
+                href={account.profileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`flex items-center gap-2 px-4 py-2 ${colorClass} text-white rounded-lg transition-all shadow-sm hover:shadow-md text-sm`}

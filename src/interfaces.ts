@@ -55,20 +55,29 @@ export interface ISessionsData {
   pageSize: number;
 }
 
+// export interface ISession {
+//   id: string;
+//   name: string;
+//   description: string;
+//   system: {
+//     id: string;
+//     name: string;
+//   };
+//   requirements: IRequirement[];
+//   ownerFullName: string;
+//   private: boolean;
+//   running: boolean;
+// }
 export interface ISession {
   id: string;
   name: string;
   description: string;
-  system: {
-    id: string;
-    name: string;
-  };
+  status: string;
+  system: ISystem;
   requirements: IRequirement[];
   ownerFullName: string;
   private: boolean;
-  running: boolean;
 }
-
 export interface IRequirement {
   requirementId: string;
   field: string;
@@ -222,13 +231,43 @@ export interface SessionResponse {
 /*-------------------------------------------------------------------------------------------------- */
 export interface IProfileResponse {
   data: {
-    user: IUser;
-    sessions: ISessionsData;
+    user: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      name: string;
+      email: string;
+      skills: { id: string; name: string }[];
+      socialAccounts: { platform: string; profileUrl: string }[];
+      brief: string;
+    };
+    sessions: {
+      sessions: {
+        id: string;
+        name: string;
+        description: string;
+        status: string;
+        system: { id: string; name: string };
+        requirements: {
+          requirementId: string;
+          field: string;
+          technologies: string[];
+        }[];
+        ownerFullName: string;
+        private: boolean;
+      }[];
+      totalItems: number;
+      totalPages: number;
+      pageSize: number;
+    };
   };
   status: number;
   message: string;
 }
-
+export interface ISkill {
+  id: string;
+  name: string;
+}
 export interface IUser {
   id: string;
   firstName: string;
@@ -239,43 +278,23 @@ export interface IUser {
   socialAccounts: ISocialAccount[];
   brief: string;
 }
-
-export interface ISkill {
-  id: string;
-  name: string;
+export interface ISocialAccount {
+  platform: string; // e.g. "GITHUB", "LINKEDIN"
+  profileUrl: string; // e.g. "https://github.com/3raffat"
 }
 
-export interface ISocialAccount {
-  platform: string;
+/*-------------------------------------------------------------------------------------------------- */
+export type SocialPlatform = "LINKEDIN" | "GITHUB" | "X" | "FACEBOOK";
+
+export interface ISocialAccountRequest {
+  platformName: SocialPlatform;
   profileUrl: string;
 }
 
-export interface ISessionsData {
-  sessions: ISession[];
-  totalItems: number;
-  totalPages: number;
-  pageSize: number;
+export interface IUserProfileRequest {
+  firstName: string;
+  lastName: string;
+  brief: string;
+  skillsIds: string[];
+  socialAccountRequests: ISocialAccountRequest[];
 }
-
-export interface ISession {
-  id: string;
-  name: string;
-  description: string;
-  status: string;
-  system: ISystem;
-  requirements: IRequirement[];
-  ownerFullName: string;
-  private: boolean;
-}
-
-export interface ISystem {
-  id: string;
-  name: string;
-}
-
-export interface IRequirement {
-  requirementId: string;
-  field: string;
-  technologies: string[];
-}
-/*-------------------------------------------------------------------------------------------------- */

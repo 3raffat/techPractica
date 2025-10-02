@@ -7,15 +7,17 @@ interface IProps {
   onEdit: () => void;
 }
 function ProfileHeader({ user, onEdit }: IProps) {
-  const displayName =
-    user?.firstName && user?.lastName
-      ? `${user?.firstName} ${user?.lastName}`
-      : user.name || "User";
+  const displayName = user
+    ? user.firstName && user.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : user.name || "User"
+    : "User";
 
-  const initials =
-    user.firstName && user.lastName
-      ? `${user?.firstName.charAt(0)}${user?.lastName.charAt(0)}`.toUpperCase()
-      : user?.name.charAt(0).toUpperCase() || "U";
+  const initials = user
+    ? user.firstName && user.lastName
+      ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
+      : user.name?.charAt(0).toUpperCase() || "U"
+    : "U";
 
   return (
     <div className="bg-gradient-to-r from-[#42D5AE] to-[#38b28d] rounded-2xl shadow-lg p-8 text-white">

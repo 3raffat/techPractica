@@ -9,9 +9,10 @@ import WorkSpace from "../pages/Sessions/WorkSpace";
 import CreateSession from "../pages/Sessions/CreateSession";
 import EditSession from "../pages/Sessions/EditSession";
 import AuthPage from "../pages/User/Auth";
-
 import SessionDetails from "../pages/Sessions/SessionDetails";
 import ProfilePage from "../pages/Home/Profile";
+import ProfileLayout from "../components/Profile/ProfileLayout";
+import UserProfileForm from "../components/Profile/CompleteProfile";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -32,7 +33,10 @@ export const router = createBrowserRouter(
           <Route path="session/:id" element={<SessionDetails />} />
         </Route>
 
-        <Route path="profile" element={<ProfilePage />} />
+        <Route path="profile" element={<ProfileLayout />}>
+          <Route index element={<ProfilePage />} />
+          <Route path="complete" element={<UserProfileForm />} />
+        </Route>
       </Route>
 
       <Route path="auth" element={<LayoutLogin />}>

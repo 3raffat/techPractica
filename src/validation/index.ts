@@ -1,4 +1,5 @@
 import * as yup from "yup";
+import { SocialPlatform } from "../interfaces";
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
 
 export const registerSchema = yup.object({
@@ -78,11 +79,47 @@ export const SessionSchema = yup.object({
   field: yup
     .array()
     .required("Fields are required")
-    .of(yup.string().uuid("Field must be a valid UUID"))
+    .of(yup.string().uuid())
     .min(1, "At least one field is required"),
   technologies: yup
     .array()
     .required("Technologies are required")
-    .of(yup.string().uuid("Technology must be a valid UUID"))
+    .of(yup.string().uuid())
     .min(1, "At least one technology is required"),
 });
+
+export const userProfileSchema = yup.object({
+  firstName: yup
+    .string()
+    .min(5, "first Name must be at least 5 characters")
+    .max(15, "first Name must be at most 15 characters")
+    .required("First Name is required"),
+  lastName: yup
+    .string()
+    .min(5, "last Name must be at least 5 characters")
+    .max(15, "last Name must be at most 15 characters")
+    .required("Last Name is required"),
+  brief: yup.string().required("Brief is required"),
+  skillsIds: yup
+    .array()
+    .of(yup.string().uuid())
+    .min(1, "At least one Skill is required")
+    .required("Skills are required"),
+  socialAccountRequests: yup
+    .array()
+    .of(
+      yup.object({
+        platformName: yup
+          .mixed<SocialPlatform>()
+          .oneOf(["LINKEDIN", "GITHUB", "X", "FACEBOOK"])
+          .required("Platform is required"),
+        profileUrl: yup
+          .string()
+          .required("Profile URL is required")
+          .url("Please enter a valid URL"),
+      })
+    )
+    .min(1, "At least one social account is required")
+    .required(),
+});
+export type IUserProfileRequestType = yup.InferType<typeof userProfileSchema>;

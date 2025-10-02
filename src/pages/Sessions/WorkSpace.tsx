@@ -2,15 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Pagination from "../../components/Pagination";
 import { HiOutlinePlus } from "react-icons/hi";
-import {
-  IErrorResponse,
-  IProfileResponse,
-  ISession,
-  ISessionsData,
-  ISessionsResponse,
-  ISystem,
-  IUser,
-} from "../../interfaces";
+import { IErrorResponse, ISessionsResponse, ISystem } from "../../interfaces";
 import { useSystems } from "../../api";
 import { useAuthQuery } from "../../imports";
 import { Link, useNavigate } from "react-router-dom";
@@ -100,7 +92,7 @@ export default function WorkSpace() {
   const [token] = useSessionStorage("token", "");
   const System = useSystems();
   const Systems = System.data?.data.systems;
-  const useExploreSession = useAuthQuery<ISessionsResponse>({
+  const useWorkSpaceSession = useAuthQuery<ISessionsResponse>({
     queryKey: [`SessionData-${currentPage}`],
     url: `/sessions/by-user?size=${ITEMS_PER_PAGE}&page=${currentPage - 1}`,
     config: {
@@ -110,10 +102,11 @@ export default function WorkSpace() {
     },
   });
 
-  const usersession = useExploreSession;
+  const usersession = useWorkSpaceSession;
   const Sessionlength = usersession.data?.data.sessions.length ?? 0;
   const SessionData = usersession.data?.data.sessions ?? [];
   const totalPages = usersession.data?.data.totalPages ?? 0;
+  console.log(usersession.data);
   /*-------------------------------------------------------------------------------*/
 
   return (

@@ -19,7 +19,7 @@ import {
   FaProjectDiagram,
 } from "react-icons/fa";
 import { Variants } from "framer-motion";
-import { IFloatingShape, IGeometricShape } from "../interfaces";
+import { IFloatingShape, IGeometricShape, SocialPlatform } from "../interfaces";
 import { LuMonitor } from "react-icons/lu";
 export interface Feature {
   title: string;
@@ -647,3 +647,9 @@ export const getFieldIcon = (field: string) => {
   }
 };
 /*-------------------------------------------------------------------------------------------------- */
+export const PLATFORM_OPTIONS: { value: SocialPlatform; label: string }[] = [
+  { value: "LINKEDIN", label: "LinkedIn" },
+  { value: "GITHUB", label: "GitHub" },
+  { value: "X", label: "X (Twitter)" },
+  { value: "FACEBOOK", label: "Facebook" },
+];

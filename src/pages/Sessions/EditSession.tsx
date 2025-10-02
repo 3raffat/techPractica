@@ -74,6 +74,7 @@ const EditSession = () => {
       )
     )
   );
+
   type EdiitSession = InferType<typeof SessionSchema>;
 
   const methods = useForm<EdiitSession>({
