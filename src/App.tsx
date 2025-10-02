@@ -3,7 +3,7 @@ import "./index.css";
 import { router } from "./Router";
 import { Toaster } from "react-hot-toast";
 import { AnimatePresence } from "framer-motion";
-import { ErrorBoundary } from "./pages/Sessions/ErrorBoundary";
+import { ErrorBoundary } from "./components/Sessions/ErrorBoundary";
 
 function App() {
   return (

@@ -19,9 +19,9 @@ const ProfileSessionCard = ({ session, index }: IProps) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+      className="bg-white rounded-2xl shadow-sm border  border-gray-200 p-6 hover:shadow-md transition-shadow "
     >
-      <div className="flex items-start justify-between mb-4">
+      <div className="flex items-start justify-between mb-4 ">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
             <h3 className="text-lg font-bold text-gray-900">{session.name}</h3>

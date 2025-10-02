@@ -6,13 +6,12 @@ import EditProfileModal from "../../components/Profile/EditProfileModal";
 import { LuFolderCode } from "react-icons/lu";
 import ProfileHeader from "../../components/Profile/ProfileHeader";
 import { useAuthQuery } from "../../imports";
-import { IProfileResponse, ISession, IUser } from "../../interfaces";
+import { IProfileResponse, ISession } from "../../interfaces";
 import { useSessionStorage } from "usehooks-ts";
-import { FaUserAlt } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import CompleteProfileCard from "../../components/Profile/CompletePofileCard";
+import NoSessions from "../../components/Sessions/NoSessions";
 
 const ProfilePage = () => {
-  const Navigate = useNavigate();
   const [token] = useSessionStorage("token", "");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const {
@@ -30,9 +29,7 @@ const ProfilePage = () => {
   });
   const userInfo = Data?.data?.user;
   const session = Data?.data?.sessions!;
-
-  console.log(isSuccess);
-
+  if (isLoading) return <>loading</>;
   return (
     <>
       {isSuccess ? (
@@ -81,13 +78,23 @@ const ProfilePage = () => {
                   </h2>
                 </div>
                 <div className="space-y-4">
-                  {session?.sessions.map((session: ISession, index: number) => (
-                    <ProfileSessionCard
-                      key={session.id}
-                      session={session}
-                      index={index}
-                    />
-                  ))}
+                  {session.sessions.length === 0 ? (
+                    <>
+                      <NoSessions />
+                    </>
+                  ) : (
+                    <>
+                      {session?.sessions.map(
+                        (session: ISession, index: number) => (
+                          <ProfileSessionCard
+                            key={session.id}
+                            session={session}
+                            index={index}
+                          />
+                        )
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -105,30 +112,7 @@ const ProfilePage = () => {
       </AnimatePresence> */}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4">
-          <div className="bg-white shadow-2xl rounded-2xl p-10 max-w-md w-full text-center transform transition-all hover:scale-105">
-            <div className="flex justify-center mb-6">
-              <div className="bg-[#42D5AE]/20 text-[#42D5AE] p-5 rounded-full text-4xl inline-flex items-center justify-center">
-                <FaUserAlt />
-              </div>
-            </div>
-            <h1 className="text-3xl font-bold mb-4 text-[#022639]">
-              Complete Your Profile
-            </h1>
-            <p className="text-[#022639]/80 mb-8 text-base">
-              Your profile is not complete yet. Complete it now to unlock all
-              features and make the most of our platform.
-            </p>
-            <button
-              onClick={() => {
-                Navigate("complete");
-              }}
-              className="bg-[#42D5AE] text-white px-8 py-3 rounded-full font-semibold shadow-md hover:bg-[#36b797] hover:shadow-lg transition-all"
-            >
-              Complete Profile
-            </button>
-          </div>
-        </div>
+        <CompleteProfileCard route="complete" />
       )}
     </>
   );

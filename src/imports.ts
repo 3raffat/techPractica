@@ -10,7 +10,7 @@ import LayoutHome from "../src/pages/Home/Layout";
 import LayoutLogin from "../src/pages/User/Layout";
 import Home from "../src/pages/Home/Home";
 import PageNotFound from "../src/pages/User/PageNotFound";
-import ProjectsLayout from "./pages/Sessions/SessionsLayout.tsx";
+import ProjectsLayout from "./components/Sessions/SessionsLayout.tsx";
 
 export {
   LayoutHome,

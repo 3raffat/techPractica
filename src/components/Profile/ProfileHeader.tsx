@@ -2,6 +2,7 @@ import { CiMail } from "react-icons/ci";
 import { FiEdit3 } from "react-icons/fi";
 import { LuUser } from "react-icons/lu";
 import { IUser } from "../../interfaces";
+import { BsCheckCircle } from "react-icons/bs";
 interface IProps {
   user: IUser;
   onEdit: () => void;
@@ -27,7 +28,12 @@ function ProfileHeader({ user, onEdit }: IProps) {
             {initials}
           </div>
           <div>
-            <h1 className="text-4xl font-bold mb-2">{displayName}</h1>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-4xl font-bold">{displayName}</h1>
+              <div className="flex items-center gap-2 px-1 py-1 bg-green-100 border border-green-300 rounded-full">
+                <BsCheckCircle className="w-5 h-5 text-green-600" />
+              </div>{" "}
+            </div>
             <p className="flex items-center gap-2 text-white/90 text-lg mb-1">
               <LuUser className="w-5 h-5" />@{user.name}
             </p>

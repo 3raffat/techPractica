@@ -5,14 +5,14 @@ import {
 } from "react-router-dom";
 import { Home, LayoutHome, LayoutLogin, ProjectsLayout } from "../imports";
 import Explore from "../pages/Home/Explore";
-import WorkSpace from "../pages/Sessions/WorkSpace";
-import CreateSession from "../pages/Sessions/CreateSession";
-import EditSession from "../pages/Sessions/EditSession";
+import CreateSession from "../components/Sessions/CreateSession";
+import EditSession from "../components/Sessions/EditSession";
 import AuthPage from "../pages/User/Auth";
-import SessionDetails from "../pages/Sessions/SessionDetails";
+import SessionDetails from "../components/Sessions/SessionDetails";
 import ProfilePage from "../pages/Home/Profile";
 import ProfileLayout from "../components/Profile/ProfileLayout";
-import UserProfileForm from "../components/Profile/CompleteProfile";
+import UserProfileForm from "../components/Profile/CompleteProfileForm";
+import WorkSpace from "../pages/Home/WorkSpace";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(

@@ -1,21 +1,21 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Pagination from "../../components/Pagination";
 import { HiOutlinePlus } from "react-icons/hi";
 import { IErrorResponse, ISessionsResponse, ISystem } from "../../interfaces";
 import { useSystems } from "../../api";
 import { useAuthQuery } from "../../imports";
 import { Link, useNavigate } from "react-router-dom";
-import { WorkSpaceSessionCard } from "../../components/Cards/WorkSpaceSessionCard";
 import axiosInstance from "../../config/axios.config";
 import toast from "react-hot-toast";
 import { AxiosError } from "axios";
-import DeleteSessionModel from "../../components/DeleteSessionModel";
 import { useQueryClient } from "@tanstack/react-query";
 import { AiOutlineSearch } from "react-icons/ai";
 import { LuFolderOpen } from "react-icons/lu";
 import { IoFilterOutline } from "react-icons/io5";
 import { useSessionStorage } from "usehooks-ts";
+import { WorkSpaceSessionCard } from "../../components/Cards/WorkSpaceSessionCard";
+import DeleteSessionModel from "../../components/DeleteSessionModel";
+import Pagination from "../../components/Pagination";
 
 const statuses = ["All", "draft", "in-progress", "completed"];
 const visibilities = ["All", "public", "private"];
