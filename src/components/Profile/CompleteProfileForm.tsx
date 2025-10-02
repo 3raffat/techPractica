@@ -17,18 +17,18 @@ import { PLATFORM_OPTIONS } from "../../data/data";
 import toast from "react-hot-toast";
 import { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
-import { useSessionStorage } from "usehooks-ts";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { IUserProfileRequestType, userProfileSchema } from "../../validation";
+import { getToken } from "../../helpers/helpers";
 
 const UserProfileForm = () => {
+  const token = getToken();
   const Technology = useTechnologies().data?.data.technologies ?? [];
   const Skills = Technology.map((item) => ({
     id: item.id,
     name: item.name,
   }));
   const Navigate = useNavigate();
-  const [token] = useSessionStorage("token", null);
   const methods: UseFormReturn<IUserProfileRequestType> =
     useForm<IUserProfileRequestType>({
       resolver: yupResolver(userProfileSchema),

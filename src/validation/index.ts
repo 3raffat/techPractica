@@ -103,7 +103,7 @@ export const userProfileSchema = yup.object({
   skillsIds: yup
     .array()
     .of(yup.string().uuid())
-    .min(1, "At least one Skill is required")
+    .min(3, "At least three Skill is required")
     .required("Skills are required"),
   socialAccountRequests: yup
     .array()

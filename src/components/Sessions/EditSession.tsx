@@ -31,8 +31,7 @@ import { SessionSchema } from "../../validation";
 import { InferType } from "yup";
 import { LuArrowLeft } from "react-icons/lu";
 import { IoSaveOutline } from "react-icons/io5";
-import { useSessionStorage } from "usehooks-ts";
-
+import { getToken } from "../../helpers/helpers";
 const EditSession = () => {
   const { id } = useParams();
   const Navigate = useNavigate();
@@ -42,8 +41,7 @@ const EditSession = () => {
   const Technology = useTechnologies().data?.data.technologies ?? [];
 
   /* ------------------ Form & State ------------------ */
-  const [token] = useSessionStorage("token", "");
-
+  const token = getToken();
   const queryClient = useQueryClient();
   const UserSession = useAuthQuery<SessionResponse>({
     queryKey: [`UserSession`],
@@ -54,7 +52,6 @@ const EditSession = () => {
       },
     },
   });
-
   const session = UserSession ?? [];
   const SessionData = session?.data?.data;
   const fieldName = SessionData?.requirements.map((x) => x.field);

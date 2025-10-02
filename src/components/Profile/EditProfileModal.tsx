@@ -1,7 +1,109 @@
 import { motion } from "framer-motion";
-import { FiAward, FiUser } from "react-icons/fi";
+import {
+  Controller,
+  FormProvider,
+  useFieldArray,
+  useForm,
+  UseFormReturn,
+} from "react-hook-form";
+import { BsSave, BsX } from "react-icons/bs";
+import { useNavigate } from "react-router-dom";
+import { yupResolver } from "@hookform/resolvers/yup";
+import toast from "react-hot-toast";
+import axiosInstance from "../../config/axios.config";
+import { AxiosError } from "axios";
 
-const EditProfileModal = ({ isOpen, onClose, user, onSave }: any) => {
+import Inputs from "../ui/Input";
+import ErrorMsg from "../ui/ErrorMsg";
+import MultiSelectField from "../ui/muiltselect";
+import { IoTrashOutline } from "react-icons/io5";
+import { PiPlus } from "react-icons/pi";
+
+import { IUserProfileRequestType, userProfileSchema } from "../../validation";
+import { useTechnologies } from "../../api";
+import { getToken } from "../../helpers/helpers";
+import { PLATFORM_OPTIONS } from "../../data/data";
+import {
+  IField,
+  IUser,
+  IErrorResponse,
+  SocialPlatform,
+} from "../../interfaces";
+
+interface IProps {
+  isOpen: boolean;
+  onClose: () => void;
+  user: IUser;
+  onUpdated: () => void;
+}
+
+const EditProfileModal = ({ isOpen, onClose, user, onUpdated }: IProps) => {
+  const token = getToken();
+  const Navigate = useNavigate();
+
+  const Technology = useTechnologies().data?.data.technologies ?? [];
+  const Skills = Technology.map((item) => ({ id: item.id, name: item.name }));
+
+  const UserSkill = user.skills.map((x) => x.id);
+
+  const methods: UseFormReturn<IUserProfileRequestType> =
+    useForm<IUserProfileRequestType>({
+      resolver: yupResolver(userProfileSchema),
+      defaultValues: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        brief: user.brief,
+        skillsIds: UserSkill,
+        socialAccountRequests:
+          user.socialAccounts.length > 0
+            ? user.socialAccounts.map((acc) => {
+                const platform = PLATFORM_OPTIONS.find(
+                  (p) => p.value === acc.platform
+                )?.value as SocialPlatform;
+                return {
+                  platformName: platform,
+                  profileUrl: acc.profileUrl || "",
+                };
+              })
+            : [{ platformName: "LINKEDIN" as SocialPlatform, profileUrl: "" }],
+      },
+    });
+
+  const { control, register, handleSubmit, watch, reset } = methods;
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "socialAccountRequests",
+    keyName: "key",
+  });
+
+  const socialAccounts = watch("socialAccountRequests");
+
+  const getAvailablePlatforms = (currentIndex: number) => {
+    const selectedPlatforms = socialAccounts
+      .filter((_, i) => i !== currentIndex)
+      .map((acc) => acc.platformName);
+
+    return PLATFORM_OPTIONS.filter(
+      (opt) => !selectedPlatforms.includes(opt.value)
+    );
+  };
+
+  const onSubmit = async (data: IUserProfileRequestType) => {
+    console.log(data);
+    try {
+      await axiosInstance.put("/profile/", data, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      onUpdated?.();
+      toast.success("Profile updated successfully", { duration: 1000 });
+      Navigate("/profile");
+    } catch (error) {
+      const err = error as AxiosError<IErrorResponse>;
+      toast.error(err.message, { duration: 2000 });
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -13,7 +115,6 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }: any) => {
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
-
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -28,177 +129,142 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }: any) => {
               onClick={onClose}
               className="p-2 rounded-full hover:bg-white/20 transition-colors text-white"
             >
-              <X className="w-6 h-6" />
+              <BsX className="w-6 h-6" />
             </button>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-8">
-          {/* Basic Information */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <FiUser className="w-5 h-5 text-[#42D5AE]" />
-              Basic Information
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormProvider {...methods}>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-4"
+            id="myForm"
+          >
+            <div className="bg-white shadow-lg rounded-2xl p-8 space-y-6">
+              {/* First Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   First Name
                 </label>
-                <input
+                <Inputs
+                  id="firstName"
                   type="text"
-                  value={editData.firstName || ""}
-                  onChange={(e) =>
-                    setEditData({ ...editData, firstName: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none"
-                  placeholder="Enter first name"
+                  placeholder="First Name"
+                  {...register("firstName")}
+                  className="w-full px-5 py-3 border border-gray-300 rounded-2xl shadow-sm focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none"
                 />
+                {methods.formState.errors.firstName && (
+                  <ErrorMsg Msg={methods.formState.errors.firstName?.message} />
+                )}
               </div>
+
+              {/* Last Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Last Name
                 </label>
-                <input
+                <Inputs
+                  id="lastName"
                   type="text"
-                  value={editData.lastName || ""}
-                  onChange={(e) =>
-                    setEditData({ ...editData, lastName: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none"
-                  placeholder="Enter last name"
+                  placeholder="Last Name"
+                  {...register("lastName")}
+                  className="w-full px-5 py-3 border border-gray-300 rounded-2xl shadow-sm focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none"
                 />
+                {methods.formState.errors.lastName && (
+                  <ErrorMsg Msg={methods.formState.errors.lastName?.message} />
+                )}
               </div>
-            </div>
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Brief
-              </label>
-              <textarea
-                value={editData.brief || ""}
-                onChange={(e) =>
-                  setEditData({ ...editData, brief: e.target.value })
-                }
-                rows={4}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none resize-none"
-                placeholder="Tell us about yourself..."
-              />
-            </div>
-          </div>
 
-          {/* Skills Section */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <FiAward className="w-5 h-5 text-[#42D5AE]" />
-              Skills
-            </h3>
-            <div className="flex gap-2 mb-4">
-              <input
-                type="text"
-                value={newSkill}
-                onChange={(e) => setNewSkill(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && addSkill()}
-                placeholder="Add a skill..."
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none"
-              />
-              <button
-                onClick={addSkill}
-                className="px-4 py-2 bg-[#42D5AE] text-white rounded-lg hover:bg-[#38b28d] transition-colors flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                Add
-              </button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {editData.skills.map((skill: string, index: number) => (
-                <div
-                  key={index}
-                  className="px-3 py-2 bg-gradient-to-r from-[#42D5AE]/10 to-[#38b28d]/10 border border-[#42D5AE]/30 rounded-lg text-gray-800 text-sm font-medium flex items-center gap-2 group"
-                >
-                  <Code className="w-4 h-4 text-[#42D5AE]" />
-                  {skill}
-                  <button
-                    onClick={() => removeSkill(index)}
-                    className="hover:bg-red-100 rounded-full p-1 transition-colors"
-                  >
-                    <X className="w-3 h-3 text-red-500" />
-                  </button>
-                </div>
-              ))}
-              {editData.skills.length === 0 && (
-                <p className="text-gray-500 text-sm">
-                  No skills added yet. Add your first skill above.
-                </p>
+              {/* Brief */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Brief
+                </label>
+                <textarea
+                  {...register("brief")}
+                  rows={4}
+                  placeholder="Brief"
+                  className="w-full px-5 py-3 border border-gray-300 rounded-2xl shadow-sm focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none resize-none"
+                />
+                {methods.formState.errors.brief && (
+                  <ErrorMsg Msg={methods.formState.errors.brief?.message} />
+                )}
+              </div>
+
+              {/* Skills */}
+              {Skills.length > 0 && (
+                <MultiSelectField<IField>
+                  options={Skills}
+                  label="Skills"
+                  name="skillsIds"
+                  getLabel={(x) => x.name}
+                  getValue={(x) => x.id}
+                />
               )}
-            </div>
-          </div>
 
-          {/* Social Accounts Section */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Globe className="w-5 h-5 text-[#42D5AE]" />
-              Social Accounts
-            </h3>
-            <div className="space-y-2 mb-4">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newPlatform}
-                  onChange={(e) => setNewPlatform(e.target.value)}
-                  placeholder="Platform (e.g., github, linkedin)"
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none"
-                />
-                <input
-                  type="url"
-                  value={newUrl}
-                  onChange={(e) => setNewUrl(e.target.value)}
-                  placeholder="URL"
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none"
-                />
-                <button
-                  onClick={addSocialAccount}
-                  className="px-4 py-2 bg-[#42D5AE] text-white rounded-lg hover:bg-[#38b28d] transition-colors flex items-center gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add
-                </button>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {editData.socialAccounts.map((account: any, index: number) => {
-                const Icon = getSocialIcon(account.platform);
-                const colorClass = getSocialColor(account.platform);
-
-                return (
-                  <div key={index} className="relative group">
-                    <div
-                      className={`flex items-center justify-between gap-3 px-4 py-3 ${colorClass} text-white rounded-lg`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Icon className="w-5 h-5" />
-                        <span className="font-medium capitalize">
-                          {account.platform}
-                        </span>
-                      </div>
+              {/* Social Accounts */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Social Accounts
+                </label>
+                {fields.map((field, index) => (
+                  <div key={field.key} className="flex gap-2 mb-2">
+                    <Controller
+                      name={`socialAccountRequests.${index}.platformName`}
+                      control={control}
+                      render={({ field }) => (
+                        <select
+                          {...field}
+                          className="w-35 px-4 py-3 border border-gray-400 rounded-xl focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none"
+                        >
+                          {getAvailablePlatforms(index).map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    />
+                    <Inputs
+                      placeholder="Profile URL"
+                      className="w-full px-4 py-3 border border-gray-400 rounded-xl focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none"
+                      {...register(`socialAccountRequests.${index}.profileUrl`)}
+                    />
+                    {fields.length > 1 && (
                       <button
-                        onClick={() => removeSocialAccount(index)}
-                        className="p-1.5 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+                        type="button"
+                        onClick={() => remove(index)}
+                        className="text-red-500"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <IoTrashOutline />
                       </button>
-                    </div>
+                    )}
                   </div>
-                );
-              })}
-              {editData.socialAccounts.length === 0 && (
-                <p className="text-gray-500 text-sm col-span-2">
-                  No social accounts added yet. Add your first account above.
-                </p>
-              )}
+                ))}
+                {socialAccounts.length < PLATFORM_OPTIONS.length && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      append({
+                        platformName:
+                          PLATFORM_OPTIONS.find(
+                            (p) =>
+                              !socialAccounts.some(
+                                (a) => a.platformName === p.value
+                              )
+                          )?.value || "LINKEDIN",
+                        profileUrl: "",
+                      })
+                    }
+                    className="mt-2 text-[#42D5AE]"
+                  >
+                    <PiPlus />
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        </div>
+          </form>
+        </FormProvider>
 
         {/* Footer */}
         <div className="sticky bottom-0 bg-gray-50 p-6 rounded-b-2xl border-t border-gray-200">
@@ -210,10 +276,11 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }: any) => {
               Cancel
             </button>
             <button
-              onClick={handleSave}
+              type="submit"
+              form="myForm"
               className="flex-1 px-6 py-3 bg-gradient-to-r from-[#42D5AE] to-[#38b28d] hover:from-[#38b28d] hover:to-[#42D5AE] text-white rounded-lg transition-all duration-300 font-medium flex items-center justify-center gap-2"
             >
-              <Save className="w-5 h-5" />
+              <BsSave className="w-5 h-5" />
               Save Changes
             </button>
           </div>
@@ -222,4 +289,5 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }: any) => {
     </div>
   );
 };
+
 export default EditProfileModal;

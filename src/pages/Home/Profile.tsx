@@ -2,24 +2,25 @@ import { useState } from "react";
 import SkillsSection from "../../components/Profile/SkillsSection";
 import SocialAccountsSection from "../../components/Profile/SocialAccountsSection";
 import ProfileSessionCard from "../../components/Profile/ProfileSessionCard";
-import EditProfileModal from "../../components/Profile/EditProfileModal";
 import { LuFolderCode } from "react-icons/lu";
 import ProfileHeader from "../../components/Profile/ProfileHeader";
 import { useAuthQuery } from "../../imports";
 import { IProfileResponse, ISession } from "../../interfaces";
-import { useSessionStorage } from "usehooks-ts";
 import CompleteProfileCard from "../../components/Profile/CompletePofileCard";
 import NoSessions from "../../components/Sessions/NoSessions";
+import { getToken } from "../../helpers/helpers";
+import { AnimatePresence } from "framer-motion";
+import EditProfileModal from "../../components/Profile/EditProfileModal";
 
 const ProfilePage = () => {
-  const [token] = useSessionStorage("token", "");
+  const token = getToken();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const {
     data: Data,
-    isLoading,
     isSuccess,
+    refetch,
   } = useAuthQuery<IProfileResponse>({
-    queryKey: ["profile-data", token],
+    queryKey: [`profile-data-${token}`],
     url: "/profile/",
     config: {
       headers: {
@@ -29,7 +30,6 @@ const ProfilePage = () => {
   });
   const userInfo = Data?.data?.user;
   const session = Data?.data?.sessions!;
-  if (isLoading) return <>loading</>;
   return (
     <>
       {isSuccess ? (
@@ -99,17 +99,17 @@ const ProfilePage = () => {
               </div>
             </div>
           </div>
-          {/* Edit Profile Modal
-      <AnimatePresence>
-        {isEditModalOpen && (
-          <EditProfileModal
-            isOpen={isEditModalOpen}
-            onClose={() => setIsEditModalOpen(false)}
-            user={user}
-            onSave={handleSave}
-          />
-        )}
-      </AnimatePresence> */}
+          {/* Edit Profile Modal */}
+          <AnimatePresence>
+            {isEditModalOpen && (
+              <EditProfileModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                user={userInfo!}
+                onUpdated={() => refetch()}
+              />
+            )}
+          </AnimatePresence>
         </div>
       ) : (
         <CompleteProfileCard route="complete" />

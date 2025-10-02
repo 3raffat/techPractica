@@ -1,14 +1,13 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useAuthQuery } from "../../imports";
 import { SessionResponse } from "../../interfaces";
-import { getInitials, getUserColor } from "../../data/data";
+import { getInitials } from "../../data/data";
 import { GoArrowLeft } from "react-icons/go";
 import { PiBookOpenTextLight } from "react-icons/pi";
-import { useSessionStorage } from "usehooks-ts";
-
+import { getToken } from "../../helpers/helpers";
 export default function ProjectDetailPage() {
   /* ------------------ Fetch Data ------------------ */
-  const [token] = useSessionStorage("token", "");
+  const token = getToken();
   const { id } = useParams();
   const location = useLocation();
   const page = location.pathname.split("/")[1] ?? "";
@@ -60,9 +59,7 @@ export default function ProjectDetailPage() {
           <div className="flex items-center gap-2 text-sm text-gray-700">
             <div className="flex items-center gap-2 ">
               <div
-                className={`h-10 w-10 rounded-full ${getUserColor(
-                  SessionData?.ownerFullName!
-                )} flex items-center justify-center text-xs font-medium`}
+                className={`h-10 w-10 rounded-full bg-teal-100 text-[#38b28d] flex items-center justify-center text-xs font-medium`}
               >
                 {getInitials(SessionData?.ownerFullName!)}
               </div>

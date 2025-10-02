@@ -1,13 +1,14 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { NavLinks } from "../../Router/route";
-import { useSessionStorage } from "usehooks-ts";
+import { getToken } from "../../helpers/helpers";
 
 interface IProps {
   pathname: string;
 }
 const Desktop = ({ pathname }: IProps) => {
-  const [token] = useSessionStorage("token", null);
+  const token = getToken();
+
   return (
     <>
       <div className="hidden md:flex items-center space-x-1">

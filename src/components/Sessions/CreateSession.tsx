@@ -31,8 +31,8 @@ import { motion } from "framer-motion";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { SessionSchema } from "../../validation";
 import { InferType } from "yup";
-import { useSessionStorage } from "usehooks-ts";
 import CompleteProfileCard from "../Profile/CompletePofileCard";
+import { getToken } from "../../helpers/helpers";
 
 const CreateSession = () => {
   const Navigate = useNavigate();
@@ -44,14 +44,13 @@ const CreateSession = () => {
     resolver: yupResolver(SessionSchema),
   });
 
-  const [token] = useSessionStorage("token", "");
-
+  const token = getToken();
   /* ------------------ Fetch Data ------------------ */
   const Systems = useSystems().data?.data.systems;
   const Fields = useFields().data?.data;
   const Technology = useTechnologies().data?.data.technologies ?? [];
   const { isSuccess } = useAuthQuery<IProfileResponse>({
-    queryKey: ["profile-data", token],
+    queryKey: [`profile-data-${token}`],
     url: "/profile/",
     config: {
       headers: {

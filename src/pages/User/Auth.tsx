@@ -18,16 +18,14 @@ import { ErrorMsg } from "../../imports";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import { BsArrowRight } from "react-icons/bs";
 import { MdOutlineEmail } from "react-icons/md";
-import { useSessionStorage } from "usehooks-ts";
 import { FiChrome, FiGithub } from "react-icons/fi";
+import { setToken } from "../../helpers/helpers";
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const [token, setToken] = useSessionStorage("token", "");
-  ////////////////////////////////////////////////////////////////////////////////
   const {
     register: registerRegister,
     handleSubmit: RegisterSubmit,

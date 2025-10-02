@@ -5,6 +5,7 @@ import { GoX } from "react-icons/go";
 import { LuUser } from "react-icons/lu";
 import { MdLogout } from "react-icons/md";
 import { Link } from "react-router-dom";
+import { getInitials } from "../../data/data";
 
 interface IProps {
   showUserMenu: boolean;
@@ -13,6 +14,8 @@ interface IProps {
   handleLogout: () => void;
   isSidebarOpen: boolean;
   setIsSidebarOpen: (isSidebarOpen: boolean) => void;
+  fullname: string;
+  userEmail: string;
 }
 const RightSection = ({
   setShowUserMenu,
@@ -21,6 +24,8 @@ const RightSection = ({
   handleLogout,
   isSidebarOpen,
   setIsSidebarOpen,
+  fullname,
+  userEmail,
 }: IProps) => {
   return (
     <>
@@ -35,7 +40,7 @@ const RightSection = ({
               className="flex items-center gap-2 p-2 rounded-xl hover:bg-gray-100 transition-colors"
             >
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#42D5AE] to-[#38b28d] flex items-center justify-center text-white font-semibold text-sm">
-                JD
+                {getInitials(fullname)}
               </div>
               <FaChevronDown
                 className={`w-4 h-4 text-gray-600 transition-transform ${
@@ -64,8 +69,8 @@ const RightSection = ({
                     className="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-200 rounded-2xl shadow-xl z-20 py-2"
                   >
                     <div className="px-4 py-3 border-b border-gray-100">
-                      <p className="font-semibold text-gray-900">John Doe</p>
-                      <p className="text-sm text-gray-600">john@example.com</p>
+                      <p className="font-semibold text-gray-900">{fullname}</p>
+                      <p className="text-sm text-gray-600">{userEmail}</p>
                     </div>
                     <div className="py-2">
                       <Link

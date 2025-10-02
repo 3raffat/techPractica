@@ -12,10 +12,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { AiOutlineSearch } from "react-icons/ai";
 import { LuFolderOpen } from "react-icons/lu";
 import { IoFilterOutline } from "react-icons/io5";
-import { useSessionStorage } from "usehooks-ts";
 import { WorkSpaceSessionCard } from "../../components/Cards/WorkSpaceSessionCard";
 import DeleteSessionModel from "../../components/DeleteSessionModel";
 import Pagination from "../../components/Pagination";
+import { getToken } from "../../helpers/helpers";
 
 const statuses = ["All", "draft", "in-progress", "completed"];
 const visibilities = ["All", "public", "private"];
@@ -89,7 +89,7 @@ export default function WorkSpace() {
     }
   };
   /*-----------Data--------------------------------------------------------------------*/
-  const [token] = useSessionStorage("token", "");
+  const token = getToken();
   const System = useSystems();
   const Systems = System.data?.data.systems;
   const useWorkSpaceSession = useAuthQuery<ISessionsResponse>({
@@ -106,7 +106,6 @@ export default function WorkSpace() {
   const Sessionlength = usersession.data?.data.sessions.length ?? 0;
   const SessionData = usersession.data?.data.sessions ?? [];
   const totalPages = usersession.data?.data.totalPages ?? 0;
-  console.log(usersession.data);
   /*-------------------------------------------------------------------------------*/
 
   return (
@@ -332,7 +331,7 @@ export default function WorkSpace() {
                     </button>
                   )}
                   <Link
-                    to="new"
+                    to="session/new"
                     className="px-4 py-2 bg-[#42D5AE] text-white rounded-lg hover:bg-[#38b28d] transition-colors flex items-center gap-2"
                   >
                     <HiOutlinePlus className="w-4 h-4" />

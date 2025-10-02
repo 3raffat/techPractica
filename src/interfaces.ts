@@ -278,6 +278,7 @@ export interface IUser {
   socialAccounts: ISocialAccount[];
   brief: string;
 }
+
 export interface ISocialAccount {
   platform: string; // e.g. "GITHUB", "LINKEDIN"
   profileUrl: string; // e.g. "https://github.com/3raffat"
@@ -291,6 +292,10 @@ export interface ISocialAccountRequest {
   profileUrl: string;
 }
 
+export interface ISocialAccountRequest {
+  platformName: SocialPlatform;
+  profileUrl: string;
+}
 export interface IUserProfileRequest {
   firstName: string;
   lastName: string;
@@ -298,3 +303,4 @@ export interface IUserProfileRequest {
   skillsIds: string[];
   socialAccountRequests: ISocialAccountRequest[];
 }
+/*-------------------------------------------------------------------------------------------------- */

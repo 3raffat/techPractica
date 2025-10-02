@@ -13,35 +13,39 @@ import ProfilePage from "../pages/Home/Profile";
 import ProfileLayout from "../components/Profile/ProfileLayout";
 import UserProfileForm from "../components/Profile/CompleteProfileForm";
 import WorkSpace from "../pages/Home/WorkSpace";
-
+import ProtectedRoute from "../pages/User/ProtectedRoute";
+import AuthRoute from "../pages/User/AuthRoute";
 export const router = createBrowserRouter(
   createRoutesFromElements(
     <>
       <Route path="/" element={<LayoutHome />}>
         <Route index element={<Home />} />
-
         <Route path="explore" element={<ProjectsLayout />}>
           <Route index element={<Explore />} />
           <Route path="session/:id" element={<SessionDetails />} />
         </Route>
-
-        <Route path="workspace" element={<ProjectsLayout />}>
-          <Route index element={<WorkSpace />} />
-          <Route path="session/new" element={<CreateSession />} />
-          <Route path="session/:id/edit" element={<EditSession />} />
-          <Route path="session/:id/requests" element={"test"} />
-          <Route path="session/:id" element={<SessionDetails />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="workspace" element={<ProjectsLayout />}>
+            <Route index element={<WorkSpace />} />
+            <Route path="session/new" element={<CreateSession />} />
+            <Route path="session/:id/edit" element={<EditSession />} />
+            <Route path="session/:id/requests" element={"test"} />
+            <Route path="session/:id" element={<SessionDetails />} />
+          </Route>
         </Route>
-
-        <Route path="profile" element={<ProfileLayout />}>
-          <Route index element={<ProfilePage />} />
-          <Route path="complete" element={<UserProfileForm />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="profile" element={<ProfileLayout />}>
+            <Route index element={<ProfilePage />} />
+            <Route path="complete" element={<UserProfileForm />} />
+          </Route>
+        </Route>
+      </Route>
+      <Route element={<AuthRoute />}>
+        <Route path="auth" element={<LayoutLogin />}>
+          <Route index element={<AuthPage />} />
         </Route>
       </Route>
 
-      <Route path="auth" element={<LayoutLogin />}>
-        <Route index element={<AuthPage />} />
-      </Route>
       {/* <Route path="SessionKanban" element={<HorizontalLayout />}>
         <Route index element={<KanbanBoard />} />
       </Route> */}

@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { FiArrowRight } from "react-icons/fi";
 import { ISession } from "../../interfaces";
-import { categoriess, getInitials, getUserColor } from "../../data/data";
+import { categoriess, getInitials } from "../../data/data";
 interface IProps {
   project: ISession;
   onClick: () => void;
@@ -34,9 +34,7 @@ const ExploreSessionCard = ({ onClick, project }: IProps) => {
               {/* Owner info with avatar */}
               <div className="flex items-center gap-2 ">
                 <div
-                  className={`h-6 w-6 rounded-full ${getUserColor(
-                    project.ownerFullName
-                  )} flex items-center justify-center text-xs font-medium`}
+                  className={`h-6 w-6 rounded-full bg-teal-100 text-[#38b28d] flex items-center justify-center text-xs font-medium`}
                 >
                   {getInitials(project.ownerFullName)}
                 </div>
