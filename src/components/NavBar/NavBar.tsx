@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Desktop from "./Desktop";
 import RightSection from "./RightSection";
 import MobileSidebar from "./MobileSidebar";
-import { clearToken, getToken } from "../../helpers/helpers";
+import { clearRole, clearToken, getToken } from "../../helpers/helpers";
 import { useAuthQuery } from "../../imports";
 import { IProfileResponse } from "../../interfaces";
 
@@ -17,6 +17,7 @@ export default function Navbar() {
   const token = getToken();
   const handleLogout = () => {
     clearToken();
+    clearRole();
     setShowUserMenu(false);
   };
 

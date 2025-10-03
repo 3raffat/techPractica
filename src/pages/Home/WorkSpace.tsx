@@ -15,8 +15,7 @@ import { IoFilterOutline } from "react-icons/io5";
 import { WorkSpaceSessionCard } from "../../components/Cards/WorkSpaceSessionCard";
 import DeleteSessionModel from "../../components/DeleteSessionModel";
 import Pagination from "../../components/Pagination";
-import { getToken } from "../../helpers/helpers";
-
+import { decodeJwtSafe, getToken } from "../../helpers/helpers";
 const statuses = ["All", "draft", "in-progress", "completed"];
 const visibilities = ["All", "public", "private"];
 const sortOptions = [
@@ -88,6 +87,7 @@ export default function WorkSpace() {
       });
     }
   };
+
   /*-----------Data--------------------------------------------------------------------*/
   const token = getToken();
   const System = useSystems();
@@ -101,7 +101,6 @@ export default function WorkSpace() {
       },
     },
   });
-
   const usersession = useWorkSpaceSession;
   const Sessionlength = usersession.data?.data.sessions.length ?? 0;
   const SessionData = usersession.data?.data.sessions ?? [];

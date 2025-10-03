@@ -11,7 +11,6 @@ export default function ProjectDetailPage() {
   const { id } = useParams();
   const location = useLocation();
   const page = location.pathname.split("/")[1] ?? "";
-  console.log();
   const UserSession = useAuthQuery<SessionResponse>({
     queryKey: [`UserSession`],
     url: `/sessions/by-id/${id}`,

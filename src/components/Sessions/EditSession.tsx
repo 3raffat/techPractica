@@ -115,8 +115,6 @@ const EditSession = () => {
 
   /*-------------------------------------------------------------------------------*/
 
-  /*-------------------------------------------------------------------------------*/
-
   const onSubmit: SubmitHandler<EdiitSession> = async (data) => {
     const { name, description, system, isPrivate } = data;
     const requirements = data.field.map((fieldId) => {

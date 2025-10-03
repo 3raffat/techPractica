@@ -7,6 +7,8 @@ import {
   FaTrophy,
   FaBolt,
   FaLink,
+  FaBrain,
+  FaMobile,
 } from "react-icons/fa";
 import {
   FaCode,
@@ -349,6 +351,50 @@ export const categoriess = [
     hoverBg: "group-purple:bg-purple-100",
   },
 ];
+
+export const categories = [
+  {
+    icon: FaCode,
+    title: "Web Development",
+    desc: "React, Node.js, Full Stack",
+    color: "from-blue-50 to-blue-100",
+    iconColor: "text-blue-600",
+    borderColor: "border-blue-200",
+  },
+  {
+    icon: FaShieldAlt,
+    title: "Cybersecurity",
+    desc: "Network Security, Ethical Hacking",
+    color: "from-green-50 to-green-100",
+    iconColor: "text-green-600",
+    borderColor: "border-green-200",
+  },
+  {
+    icon: FaGamepad,
+    title: "Game Development",
+    desc: "Unity, Unreal Engine",
+    color: "from-purple-50 to-purple-100",
+    iconColor: "text-purple-600",
+    borderColor: "border-purple-200",
+  },
+  {
+    icon: FaBrain,
+    title: "Artificial Intelligence",
+    desc: "Machine Learning, Deep Learning",
+    color: "from-pink-50 to-pink-100",
+    iconColor: "text-pink-600",
+    borderColor: "border-pink-200",
+  },
+  {
+    icon: FaMobile,
+    title: "Mobile Development",
+    desc: "iOS, Android, React Native",
+    color: "from-orange-50 to-orange-100",
+    iconColor: "text-orange-600",
+    borderColor: "border-orange-200",
+  },
+];
+
 /*-------------------------------------------------------------------------------------------------- */
 
 export const containerVariants = {

@@ -1,5 +1,5 @@
 import {
-  categoriess,
+  categories,
   floatingShapesBackground,
   geometricShapesBackground,
   staggerContainer,
@@ -66,42 +66,35 @@ const CaegoriesSection = ({}: IProps) => {
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={staggerContainer}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6"
           >
-            {categoriess.map(
-              ({ Icon, title, color, bgColor, hoverBg }, idx) => (
-                <motion.div
-                  key={idx}
-                  variants={staggerContainer}
-                  whileHover={{ y: -10, scale: 1.05, rotateY: 5 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ duration: 0.3 }}
+            {categories.map((category, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                whileHover={{ y: -8, scale: 1.05 }}
+                className="group cursor-pointer"
+              >
+                <div
+                  className={`bg-gradient-to-br ${category.color} border ${category.borderColor} rounded-3xl p-8 hover:shadow-lg transition-all h-full`}
                 >
                   <div
-                    className={`group cursor-pointer border-2 border-gray-100 hover:border-[#42D5AE]/50 transition-all duration-500 hover:shadow-2xl bg-white rounded-2xl overflow-hidden transform perspective-1000`}
+                    className={`inline-flex p-4 bg-white rounded-2xl mb-4 shadow-sm group-hover:scale-110 transition-transform`}
                   >
-                    <div className="flex flex-col items-center p-8 text-center relative">
-                      <div
-                        className={`p-6 rounded-2xl ${bgColor} ${hoverBg} transition-all duration-300 mb-6 transform group-hover:scale-110 group-hover:rotate-3`}
-                      >
-                        <Icon
-                          className={`h-10 w-10 ${color} transition-all duration-300 group-hover:scale-110`}
-                        />
-                      </div>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-[#42D5AE] transition-colors duration-300">
-                        {title}
-                      </h3>
-                      {/* <p className="text-sm text-gray-600 font-medium">
-                        Learn {title.toLowerCase()} development
-                      </p> */}
-
-                      {/* Hover overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#42D5AE]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
-                    </div>
+                    <category.icon
+                      className={`w-8 h-8 ${category.iconColor}`}
+                    />
                   </div>
-                </motion.div>
-              )
-            )}
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    {category.title}
+                  </h3>
+                  <p className="text-sm text-gray-600">{category.desc}</p>
+                </div>
+              </motion.div>
+            ))}
           </motion.div>
         </div>
       </section>

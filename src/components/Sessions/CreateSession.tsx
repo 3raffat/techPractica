@@ -58,7 +58,7 @@ const CreateSession = () => {
       },
     },
   });
-  console.log(isSuccess);
+
   /* ------------------ Watch Fields & Technologies ------------------ */
   const selectedFields =
     useWatch({ control: methods.control, name: "field" }) || [];

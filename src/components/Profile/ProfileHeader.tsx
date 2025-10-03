@@ -54,7 +54,7 @@ function ProfileHeader({ user, onEdit }: IProps) {
       </div>
 
       {user.brief && (
-        <div className="mt-6 text-white/90 text-lg">
+        <div className="mt-6 text-white/90 text-lg break-words">
           <p>{user.brief}</p>
         </div>
       )}

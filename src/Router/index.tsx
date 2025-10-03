@@ -15,6 +15,8 @@ import UserProfileForm from "../components/Profile/CompleteProfileForm";
 import WorkSpace from "../pages/Home/WorkSpace";
 import ProtectedRoute from "../pages/User/ProtectedRoute";
 import AuthRoute from "../pages/User/AuthRoute";
+import AdminRoute from "../pages/User/AdminRoute";
+import AdminDashboard from "../pages/Admin/AdminDashboard";
 export const router = createBrowserRouter(
   createRoutesFromElements(
     <>
@@ -44,6 +46,10 @@ export const router = createBrowserRouter(
         <Route path="auth" element={<LayoutLogin />}>
           <Route index element={<AuthPage />} />
         </Route>
+      </Route>
+
+      <Route element={<AdminRoute />}>
+        <Route path="admin" element={<AdminDashboard />} />
       </Route>
 
       {/* <Route path="SessionKanban" element={<HorizontalLayout />}>

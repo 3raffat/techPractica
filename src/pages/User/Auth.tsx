@@ -19,7 +19,12 @@ import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import { BsArrowRight } from "react-icons/bs";
 import { MdOutlineEmail } from "react-icons/md";
 import { FiChrome, FiGithub } from "react-icons/fi";
-import { setToken } from "../../helpers/helpers";
+import {
+  decodeJwtSafe,
+  getToken,
+  setRole,
+  setToken,
+} from "../../helpers/helpers";
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -77,6 +82,10 @@ const AuthPage = () => {
       );
       toast.success(response.data.message, { position: "top-right" });
       setToken(response.data.data.token);
+      const token = getToken();
+      const payload = decodeJwtSafe(token);
+      setRole(payload?.roles[0] ?? null);
+      console.log(payload?.roles[0] ?? null);
       navigate("/");
     } catch (error) {
       const err = error as AxiosError<{ message: string }>;

@@ -2,10 +2,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ISession } from "../../interfaces";
 import { categoriess } from "../../data/data";
 import { useNavigate } from "react-router-dom";
-import { BsEye, BsTrash2 } from "react-icons/bs";
+import { BsEye } from "react-icons/bs";
 import { useState } from "react";
 import { FiEdit3, FiMoreVertical } from "react-icons/fi";
 import { LuGitPullRequest } from "react-icons/lu";
+import { RiDeleteBin5Line } from "react-icons/ri";
 
 interface IProps {
   session: ISession;
@@ -125,7 +126,7 @@ export function WorkSpaceSessionCard({ onDelete, session, onClick }: IProps) {
                         }}
                         className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 text-red-600 flex items-center gap-2"
                       >
-                        <BsTrash2 className="w-4 h-4" />
+                        <RiDeleteBin5Line className="w-4 h-4" />
                         Delete
                       </button>
                     </motion.div>
@@ -138,7 +139,7 @@ export function WorkSpaceSessionCard({ onDelete, session, onClick }: IProps) {
 
         {/* Content */}
         <div className="p-6">
-          <p className="text-gray-600 text-sm mb-6 line-clamp-3 leading-relaxed">
+          <p className="text-gray-600 text-sm mb-6 line-clamp-3 leading-relaxed break-words">
             {session.description.slice(1, 150)}
           </p>
 
@@ -158,6 +159,11 @@ export function WorkSpaceSessionCard({ onDelete, session, onClick }: IProps) {
                   </span>
                 );
               })}
+              {allTechnologies.length > 4 && (
+                <span className="text-xs bg-gray-50 border border-gray-300 text-gray-600 hover:bg-gray-100 transition-colors px-2 py-1 rounded-full">
+                  +{allTechnologies.length - 4} more
+                </span>
+              )}
             </div>
           </div>
 

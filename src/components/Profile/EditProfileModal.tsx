@@ -69,7 +69,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdated }: IProps) => {
       },
     });
 
-  const { control, register, handleSubmit, watch, reset } = methods;
+  const { control, register, handleSubmit, watch } = methods;
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -90,7 +90,6 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdated }: IProps) => {
   };
 
   const onSubmit = async (data: IUserProfileRequestType) => {
-    console.log(data);
     try {
       await axiosInstance.put("/profile/", data, {
         headers: { Authorization: `Bearer ${token}` },

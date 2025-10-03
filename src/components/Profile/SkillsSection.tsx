@@ -1,6 +1,9 @@
 import { FiAward } from "react-icons/fi";
 import { MdOutlineCode } from "react-icons/md";
 import { ISkill } from "../../interfaces";
+import { FaCode } from "react-icons/fa";
+import { VscSymbolNamespace } from "react-icons/vsc";
+
 interface IProps {
   skills: ISkill[];
 }
@@ -26,7 +29,7 @@ const SkillsSection = ({ skills }: IProps) => {
               key={skill.id ?? index}
               className="px-3 py-1.5 bg-gradient-to-r from-[#42D5AE]/10 to-[#38b28d]/10 border border-[#42D5AE]/30 rounded-lg text-gray-800 text-sm font-medium flex items-center gap-2"
             >
-              <MdOutlineCode className="w-3 h-3 text-[#42D5AE]" />
+              <VscSymbolNamespace className="w-5 h-5 text-[#42D5AE]" />
               {skill.name}
             </div>
           ))}

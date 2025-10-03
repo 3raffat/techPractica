@@ -7,7 +7,6 @@ import {
 import { motion } from "framer-motion";
 import FloatingShape from "../ui/FloatingShape";
 import GeometricShape from "../ui/GeometricShape";
-
 interface IProps {}
 const FeaturesSection = ({}: IProps) => {
   return (
