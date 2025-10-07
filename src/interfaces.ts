@@ -304,3 +304,7 @@ export interface IUserProfileRequest {
   socialAccountRequests: ISocialAccountRequest[];
 }
 /*-------------------------------------------------------------------------------------------------- */
+export interface IData {
+  id: string;
+  name: string;
+}

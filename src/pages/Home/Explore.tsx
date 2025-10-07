@@ -56,7 +56,7 @@ export default function Explore() {
     setSortBy("newest");
     setCurrentPage(1);
   };
-
+  console.log(Session.data);
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
@@ -226,7 +226,7 @@ export default function Explore() {
                 transition={{ duration: 0.3 }}
                 className={
                   viewMode === "grid"
-                    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 min-h-screen"
                     : "space-y-6"
                 }
               >

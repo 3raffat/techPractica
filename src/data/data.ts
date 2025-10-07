@@ -560,8 +560,9 @@ export const getStatusColor = (status: string) => {
   }
 };
 import { HiOutlineServerStack } from "react-icons/hi2";
-import { GoDatabase } from "react-icons/go";
+import { GoDatabase, GoLock } from "react-icons/go";
 import { BsGithub, BsLinkedin, BsTwitter } from "react-icons/bs";
+import { CiGlobe } from "react-icons/ci";
 export const getFieldIcon = (field: string) => {
   switch (field.toLowerCase()) {
     case "front-end":
@@ -580,4 +581,25 @@ export const PLATFORM_OPTIONS: { value: SocialPlatform; label: string }[] = [
   { value: "GITHUB", label: "GitHub" },
   { value: "X", label: "X (Twitter)" },
   { value: "FACEBOOK", label: "Facebook" },
+];
+/*-------------------------------------------------------------------------------------------------- */
+interface ISessionVisible {
+  type: string;
+  isPrivate: boolean;
+  icon: IconType;
+  description: string;
+}
+export const SessionVisible: ISessionVisible[] = [
+  {
+    type: "Public",
+    isPrivate: false,
+    icon: CiGlobe,
+    description: "Anyone can view and discover this project",
+  },
+  {
+    type: "Private",
+    isPrivate: true,
+    icon: GoLock,
+    description: "Only you can view this project",
+  },
 ];

@@ -84,15 +84,15 @@ const ProfilePage = () => {
                     </>
                   ) : (
                     <>
-                      {session?.sessions.map(
-                        (session: ISession, index: number) => (
+                      {session?.sessions
+                        .slice(0, 3)
+                        .map((session: ISession, index: number) => (
                           <ProfileSessionCard
                             key={session.id}
                             session={session}
                             index={index}
                           />
-                        )
-                      )}
+                        ))}
                     </>
                   )}
                 </div>
