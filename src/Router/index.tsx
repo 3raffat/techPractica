@@ -17,6 +17,7 @@ import ProtectedRoute from "../pages/User/ProtectedRoute";
 import AuthRoute from "../pages/User/AuthRoute";
 import AdminRoute from "../pages/User/AdminRoute";
 import AdminDashboard from "../pages/Admin/AdminDashboard";
+import SessionRequest from "../components/Sessions/SessionRequest";
 export const router = createBrowserRouter(
   createRoutesFromElements(
     <>
@@ -25,13 +26,14 @@ export const router = createBrowserRouter(
         <Route path="explore" element={<ProjectsLayout />}>
           <Route index element={<Explore />} />
           <Route path="session/:id" element={<SessionDetails />} />
+          <Route path="profile/:id" element={<ProfilePage />} />
         </Route>
         <Route element={<ProtectedRoute />}>
           <Route path="workspace" element={<ProjectsLayout />}>
             <Route index element={<WorkSpace />} />
             <Route path="session/new" element={<CreateSession />} />
             <Route path="session/:id/edit" element={<EditSession />} />
-            <Route path="session/:id/requests" element={"test"} />
+            <Route path="session/:id/requests" element={<SessionRequest />} />
             <Route path="session/:id" element={<SessionDetails />} />
           </Route>
         </Route>

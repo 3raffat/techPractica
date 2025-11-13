@@ -10,7 +10,7 @@ import { LoginAxiosResponse } from "../../data/data";
 import { loginSchema, registerSchema } from "../../validation";
 import axiosInstance from "../../config/axios.config";
 import {
-  IErrorResponse,
+  ApiError,
   IFormInputLogin,
   IFormInputRegister,
 } from "../../interfaces";
@@ -21,8 +21,11 @@ import { MdOutlineEmail } from "react-icons/md";
 import { FiChrome, FiGithub } from "react-icons/fi";
 import {
   decodeJwtSafe,
+  getAdminRole,
   getToken,
+  isAdmin,
   setRole,
+  setRoleAdmin,
   setToken,
 } from "../../helpers/helpers";
 const AuthPage = () => {
@@ -53,9 +56,9 @@ const AuthPage = () => {
         position: "top-right",
         duration: 2000,
       });
-    } catch (error) {
-      const ErrorObj = error as AxiosError<IErrorResponse>;
-      toast.error(`${ErrorObj.response?.data.message}`, {
+    } catch (err) {
+      const error = err as AxiosError<ApiError>;
+      toast.error(error.response?.data.message || "login invalid", {
         position: "top-right",
         duration: 2000,
       });
@@ -85,11 +88,12 @@ const AuthPage = () => {
       const token = getToken();
       const payload = decodeJwtSafe(token);
       setRole(payload?.roles[0] ?? null);
-      console.log(payload?.roles[0] ?? null);
+      setRoleAdmin(payload?.roles[1] ?? null);
+      if (isAdmin()) navigate("/admin");
       navigate("/");
-    } catch (error) {
-      const err = error as AxiosError<{ message: string }>;
-      toast.error(err.response?.data.message || "Login failed", {
+    } catch (err) {
+      const error = err as AxiosError<ApiError>;
+      toast.error(error.response?.data.message || "login invalid", {
         position: "top-right",
         duration: 4000,
       });

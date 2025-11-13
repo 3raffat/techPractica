@@ -8,37 +8,68 @@ import toast from "react-hot-toast";
 import axiosInstance from "../../config/axios.config";
 import { getToken } from "../../helpers/helpers";
 import { useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+
+interface IField {
+  id?: string;
+  name: string;
+}
+
 interface IProps {
   isOpen: boolean;
   onClose: () => void;
+  field?: IField | null; // if provided → edit mode
 }
-export function FieldModel({ isOpen, onClose }: IProps) {
+
+export function FieldModel({ isOpen, onClose, field }: IProps) {
   const queryClient = useQueryClient();
+  const token = getToken();
+
+  const methods = useForm<IField>({
+    defaultValues: { name: "" },
+  });
+
+  const { reset } = methods;
+  const isEditMode = !!field;
+
+  // 🔹 When modal opens or field changes → update form values
+  useEffect(() => {
+    if (isOpen) {
+      if (field) {
+        reset({ name: field.name }); // fill values for edit mode
+      } else {
+        reset({ name: "" }); // clear values for create mode
+      }
+    }
+  }, [isOpen, field, reset]);
 
   if (!isOpen) return null;
-  const token = getToken();
-  interface ISystemRec {
-    name: string;
-  }
-  const methods = useForm<ISystemRec>();
-  const onSubmit: SubmitHandler<ISystemRec> = async (data) => {
+
+  const onSubmit: SubmitHandler<IField> = async (data) => {
     try {
-      await axiosInstance.post("/admin/fields/", data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      toast.success("field created successfully", {
-        position: "top-right",
-        duration: 1000,
-      });
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["FieldsData"] });
-      }, 500);
+      if (isEditMode && field?.id) {
+        await axiosInstance.put(`/admin/fields/${field.id}`, data, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        toast.success("Field updated successfully", {
+          position: "top-right",
+          duration: 1000,
+        });
+      } else {
+        await axiosInstance.post("/admin/fields/", data, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        toast.success("Field created successfully", {
+          position: "top-right",
+          duration: 1000,
+        });
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["FieldsData"] });
+      onClose();
     } catch (error) {
       const err = error as AxiosError<IErrorResponse>;
-
-      toast.error(`${err.message}`, {
+      toast.error(err.response?.data?.message || "Something went wrong", {
         position: "top-right",
         duration: 2000,
       });
@@ -50,7 +81,6 @@ export function FieldModel({ isOpen, onClose }: IProps) {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
         className="absolute inset-0 bg-black/40 backdrop-blur-md"
         onClick={onClose}
       />
@@ -61,11 +91,17 @@ export function FieldModel({ isOpen, onClose }: IProps) {
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl"
       >
+        {/* Header */}
         <div className="p-8 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div>
+              <h2 className="text-lg font-semibold text-gray-900">
+                {isEditMode ? "Edit Field" : "Create Field"}
+              </h2>
               <p className="text-sm text-gray-600 mt-1">
-                Configure field details
+                {isEditMode
+                  ? "Update field details below"
+                  : "Configure field details"}
               </p>
             </div>
             <button
@@ -76,6 +112,8 @@ export function FieldModel({ isOpen, onClose }: IProps) {
             </button>
           </div>
         </div>
+
+        {/* Form */}
         <FormProvider {...methods}>
           <form
             onSubmit={methods.handleSubmit(onSubmit)}
@@ -83,12 +121,12 @@ export function FieldModel({ isOpen, onClose }: IProps) {
           >
             <div>
               <label className="block text-sm font-bold text-gray-900 mb-3">
-                field Name
+                Field Name
               </label>
               <Inputs
                 className="w-full px-4 py-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#42D5AE]/20 focus:border-[#42D5AE] outline-none transition-all text-sm"
                 placeholder="Enter field name"
-                {...methods.register("name")}
+                {...methods.register("name", { required: true })}
               />
             </div>
 
@@ -105,7 +143,7 @@ export function FieldModel({ isOpen, onClose }: IProps) {
                 className="flex-1 px-6 py-3.5 bg-gradient-to-r from-[#42D5AE] to-[#38b28d] hover:shadow-lg hover:shadow-[#42D5AE]/25 text-white rounded-xl transition-all duration-300 font-semibold flex items-center justify-center gap-2"
               >
                 <FaSave className="w-4 h-4" />
-                {"Create"}
+                {isEditMode ? "Update" : "Create"}
               </button>
             </div>
           </form>

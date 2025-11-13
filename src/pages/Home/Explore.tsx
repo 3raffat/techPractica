@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiSearch, FiFilter, FiGrid, FiList, FiSliders } from "react-icons/fi";
-
 import { useNavigate } from "react-router-dom";
 import { useSystems } from "../../api";
 import ExploreProjectCard from "../../components/Cards/ExploreSessionCard";
@@ -9,7 +8,6 @@ import Pagination from "../../components/Pagination";
 import { ISession, ISystem, ISessionsResponse } from "../../interfaces";
 import { useAuthQuery } from "../../imports";
 
-// Helper to know when we're on desktop
 function useIsDesktop(breakpoint = 1024) {
   const [isDesktop, setIsDesktop] = useState(false);
   useEffect(() => {
@@ -21,42 +19,92 @@ function useIsDesktop(breakpoint = 1024) {
   return isDesktop;
 }
 
+const ITEMS_PER_PAGE = 6;
+
 export default function Explore() {
   /* ----------------States-------------------------------------- */
 
   const router = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [sortBy, setSortBy] = useState("newest");
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showFilters, setShowFilters] = useState(false);
-  const ITEMS_PER_PAGE = 6;
+
+  // ✅ compute flags at top-level (no hooks inside conditionals)
+  const hasActiveFilters =
+    searchTerm.trim() !== "" || selectedCategory !== "All";
+
+  // ✅ reset page when filters change (top-level hook)
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategory]);
+
   /* ----------------Data-------------------------------------- */
+  // Fetch all sessions when filters are active, otherwise use pagination
   const useExploreSessionx = useAuthQuery<ISessionsResponse>({
-    queryKey: [`SessionData-${currentPage}`],
-    url: `/sessions/?size=${ITEMS_PER_PAGE}&page=${currentPage - 1}`,
+    queryKey: [`SessionData-${hasActiveFilters ? "all" : currentPage}`],
+    url: hasActiveFilters
+      ? `/sessions/?size=1000&page=0`
+      : `/sessions/?size=${ITEMS_PER_PAGE}&page=${currentPage - 1}`,
   });
 
   const System = useSystems();
-  const Systems = System.data?.data.systems;
+  const Systems = System.data?.data.systems ?? [];
   const Session = useExploreSessionx;
-  const SessionData = Session.data?.data.sessions ?? [];
-  const Sessionlength = Session.data?.data.sessions.length ?? 0;
-  const totalPages = Session.data?.data.totalPages ?? 0;
-  const isDesktop = useIsDesktop();
-  // Reset page when filters change
-  const handleFilterChange = () => {
-    setCurrentPage(1);
-  };
+  const allSessions = Session.data?.data.sessions ?? [];
 
-  const clearFilters = () => {
-    setSearchTerm("");
-    setSelectedCategory("All");
-    setSortBy("newest");
-    setCurrentPage(1);
-  };
-  console.log(Session.data);
+  // Filter and sort sessions
+  const filteredAndSortedSessions = useMemo(() => {
+    let filtered = [...allSessions];
+
+    // Search filter
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase().trim();
+      filtered = filtered.filter(
+        (session) =>
+          session.name.toLowerCase().includes(searchLower) ||
+          session.description.toLowerCase().includes(searchLower) ||
+          session.requirements.some((req) =>
+            req.technologies.some((tech) =>
+              tech.toLowerCase().includes(searchLower)
+            )
+          ) ||
+          session.requirements.some((req) =>
+            req.field.toLowerCase().includes(searchLower)
+          )
+      );
+    }
+
+    // Category filter
+    if (selectedCategory !== "All") {
+      filtered = filtered.filter(
+        (session) => session.system.name === selectedCategory
+      );
+    }
+
+    return filtered;
+  }, [allSessions, searchTerm, selectedCategory]);
+
+  // Pagination for filtered results
+  const totalFilteredPages = Math.ceil(
+    filteredAndSortedSessions.length / ITEMS_PER_PAGE
+  );
+
+  const paginatedSessions = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filteredAndSortedSessions.slice(startIndex, endIndex);
+  }, [filteredAndSortedSessions, currentPage]);
+
+  const Sessionlength = paginatedSessions.length;
+  const SessionData = paginatedSessions;
+  const totalPages = hasActiveFilters
+    ? totalFilteredPages
+    : Session.data?.data.totalPages ?? 0;
+
+  const isDesktop = useIsDesktop();
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
@@ -69,11 +117,11 @@ export default function Explore() {
             className="text-center text-white"
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Discover Amazing Projects
+              Your Next Challenge Awaits
             </h1>
             <p className="text-xl text-[#42D5AE]/80 max-w-2xl mx-auto">
-              Explore hands-on projects created by our community. Learn by
-              building real-world applications.
+              Join a session, form a team, and bring real projects to life
+              together.
             </p>
           </motion.div>
         </div>
@@ -90,10 +138,7 @@ export default function Explore() {
                 type="text"
                 placeholder="Search projects, technologies..."
                 value={searchTerm}
-                // onChange={(e) => {
-                //   setSearchTerm(e.target.value);
-                //   handleFilterChange();
-                // }}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none transition-all"
               />
             </div>
@@ -149,43 +194,31 @@ export default function Explore() {
                   <span className="text-sm font-medium text-gray-700 mr-2">
                     Category:
                   </span>
-                  {Systems?.map(({ id, name }: ISystem) => {
-                    return (
-                      <button
-                        key={id}
-                        onClick={() => {
-                          setSelectedCategory(name);
-                          handleFilterChange();
-                        }}
-                        className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors flex items-center gap-1 ${
-                          selectedCategory === name
-                            ? "bg-[#42D5AE] text-white border-[#42D5AE]"
-                            : "bg-white text-gray-700 border-gray-300 hover:bg-[#42D5AE]/10 hover:border-[#42D5AE]/30"
-                        }`}
-                      >
-                        {name}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Sort */}
-                {/* <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700">
-                    Sort by:
-                  </span>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none bg-white"
+                  {/* Optional "All" chip */}
+                  <button
+                    onClick={() => setSelectedCategory("All")}
+                    className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors flex items-center gap-1 ${
+                      selectedCategory === "All"
+                        ? "bg-[#42D5AE] text-white border-[#42D5AE]"
+                        : "bg-white text-gray-700 border-gray-300 hover:bg-[#42D5AE]/10 hover:border-[#42D5AE]/30"
+                    }`}
                   >
-                    {sortOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div> */}
+                    All
+                  </button>
+                  {Systems.map(({ id, name }: ISystem) => (
+                    <button
+                      key={id}
+                      onClick={() => setSelectedCategory(name)}
+                      className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors flex items-center gap-1 ${
+                        selectedCategory === name
+                          ? "bg-[#42D5AE] text-white border-[#42D5AE]"
+                          : "bg-white text-gray-700 border-gray-300 hover:bg-[#42D5AE]/10 hover:border-[#42D5AE]/30"
+                      }`}
+                    >
+                      {name}
+                    </button>
+                  ))}
+                </div>
 
                 {/* Clear Filters */}
                 <button
@@ -203,51 +236,63 @@ export default function Explore() {
       {/* Results */}
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Results Count
-          <div className="flex justify-between items-center mb-6">
-            <p className="text-gray-600">
-              Showing {startIndex + 1}-
-              {Math.min(
-                startIndex + ITEMS_PER_PAGE,
-                filteredAndSortedProjects.length
-              )}{" "}
-              of {filteredAndSortedProjects.length} projects
-            </p>
-          </div> */}
-
           {/* Projects Grid/List */}
           <AnimatePresence mode="wait">
-            {Sessionlength > 0 ? (
-              <motion.div
-                key={`${viewMode}-${currentPage}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className={
-                  viewMode === "grid"
-                    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 min-h-screen"
-                    : "space-y-6"
-                }
-              >
-                {SessionData?.map((Session: ISession, index: any) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
+            {filteredAndSortedSessions.length > 0 ? (
+              Sessionlength > 0 ? (
+                <motion.div
+                  key={`${viewMode}-${currentPage}-${searchTerm}-${selectedCategory}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className={
+                    viewMode === "grid"
+                      ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                      : "space-y-6"
+                  }
+                >
+                  {SessionData?.map((Session: ISession, index: number) => (
+                    <motion.div
+                      key={Session.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <ExploreProjectCard
+                        project={Session}
+                        onClick={() =>
+                          router(`/explore/session/${Session.id}`, {
+                            state: { session: Session },
+                          })
+                        }
+                      />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center py-12"
+                >
+                  <div className="text-gray-400 mb-4">
+                    <FiFilter className="h-12 w-12 mx-auto" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No more projects on this page
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Try going to the previous page or adjusting your filters.
+                  </p>
+                  <button
+                    onClick={() => setCurrentPage(1)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                   >
-                    <ExploreProjectCard
-                      project={Session}
-                      onClick={() =>
-                        router(`/explore/session/${Session.id}`, {
-                          state: { session: Session },
-                        })
-                      }
-                    />
-                  </motion.div>
-                ))}
-              </motion.div>
+                    Go to First Page
+                  </button>
+                </motion.div>
+              )
             ) : (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -261,15 +306,18 @@ export default function Explore() {
                   No projects found
                 </h3>
                 <p className="text-gray-600 mb-4">
-                  Try adjusting your search criteria or filters to find more
-                  projects.
+                  {searchTerm || selectedCategory !== "All"
+                    ? "Try adjusting your search criteria or filters to find more projects."
+                    : "No projects available at the moment."}
                 </p>
-                <button
-                  onClick={clearFilters}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Clear Filters
-                </button>
+                {(searchTerm || selectedCategory !== "All") && (
+                  <button
+                    onClick={clearFilters}
+                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Clear Filters
+                  </button>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -282,4 +330,10 @@ export default function Explore() {
       </section>
     </div>
   );
+}
+
+// helpers
+function clearFilters() {
+  // This will be shadowed by the component-scoped clearFilters.
+  // Kept here only to satisfy TypeScript when pasting outside the component.
 }

@@ -19,28 +19,37 @@ const ProfileSessionCard = ({ session, index }: IProps) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className="bg-white rounded-2xl shadow-sm border  border-gray-200 p-6 hover:shadow-md transition-shadow "
+      whileHover={{ y: -4, scale: 1.01 }}
+      className="bg-white rounded-3xl shadow-lg border-2 border-gray-200 p-6 hover:shadow-2xl hover:border-[#42D5AE]/40 transition-all duration-300"
     >
-      <div className="flex items-start justify-between mb-4 ">
+      <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-lg font-bold text-gray-900">{session.name}</h3>
+          <div className="flex items-center gap-3 mb-3">
+            <h3 className="text-xl font-bold text-[#022639] group-hover:text-[#42D5AE] transition-colors">
+              {session.name}
+            </h3>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <BsBriefcase className="w-4 h-4" />
+          <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
+            <BsBriefcase className="w-4 h-4 text-[#42D5AE]" />
             <span>{session.system.name}</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
           {session.private ? (
-            <IoLockClosedOutline className="w-5 h-5 text-gray-400" />
+            <div className="px-3 py-1.5 bg-orange-50 text-orange-600 border-2 border-orange-200 rounded-full text-xs font-semibold shadow-sm">
+              <IoLockClosedOutline className="w-4 h-4 inline mr-1" />
+              Private
+            </div>
           ) : (
-            <CiGlobe className="w-5 h-5 text-gray-400" />
+            <div className="px-3 py-1.5 bg-green-50 text-green-600 border-2 border-green-200 rounded-full text-xs font-semibold shadow-sm">
+              <CiGlobe className="w-4 h-4 inline mr-1" />
+              Public
+            </div>
           )}
         </div>
       </div>
 
-      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+      <p className="text-gray-700 text-sm mb-4 line-clamp-2 leading-relaxed break-words">
         {session.description}
       </p>
 
@@ -48,21 +57,22 @@ const ProfileSessionCard = ({ session, index }: IProps) => {
         {session.requirements.map((req: any) => {
           const Icon = getFieldIcon(req.field);
           return (
-            <div
+            <motion.div
               key={req.requirementId}
-              className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 rounded-lg border border-gray-200 text-xs"
+              whileHover={{ scale: 1.05 }}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-[#42D5AE]/10 to-[#42D5AE]/5 border-2 border-[#42D5AE]/30 rounded-xl text-xs font-semibold shadow-sm"
             >
-              <Icon className="w-3 h-3 text-[#42D5AE]" />
-              <span className="font-medium text-gray-700">{req.field}</span>
-              <span className="text-gray-500">({req.technologies.length})</span>
-            </div>
+              <Icon className="w-3.5 h-3.5 text-[#42D5AE]" />
+              <span className="text-[#022639]">{req.field}</span>
+              <span className="text-gray-600">({req.technologies.length})</span>
+            </motion.div>
           );
         })}
       </div>
 
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-2 text-[#42D5AE] hover:text-[#38b28d] transition-colors text-sm font-medium"
+        className="flex items-center gap-2 text-[#42D5AE] hover:text-[#38b28d] transition-all duration-200 text-sm font-bold mb-4 hover:scale-105"
       >
         {isExpanded ? (
           <>
@@ -89,22 +99,25 @@ const ProfileSessionCard = ({ session, index }: IProps) => {
             return (
               <div
                 key={req.requirementId}
-                className="p-3 bg-gray-50 rounded-lg"
+                className="p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border-2 border-gray-200 shadow-sm"
               >
-                <div className="flex items-center gap-2 mb-2">
-                  <Icon className="w-4 h-4 text-[#42D5AE]" />
-                  <h4 className="font-semibold text-gray-900 text-sm">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="p-2 bg-[#42D5AE]/10 rounded-lg">
+                    <Icon className="w-4 h-4 text-[#42D5AE]" />
+                  </div>
+                  <h4 className="font-bold text-[#022639] text-sm">
                     {req.field}
                   </h4>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {req.technologies.map((tech: string, idx: number) => (
-                    <span
+                    <motion.span
                       key={idx}
-                      className="px-2 py-1 bg-white border border-gray-200 rounded-lg text-xs text-gray-700"
+                      whileHover={{ scale: 1.05 }}
+                      className="px-3 py-1.5 bg-white border-2 border-gray-200 rounded-xl text-xs text-[#022639] font-medium shadow-sm hover:border-[#42D5AE]/50 hover:bg-[#42D5AE]/5 transition-all duration-200"
                     >
                       {tech}
-                    </span>
+                    </motion.span>
                   ))}
                 </div>
               </div>
@@ -113,13 +126,13 @@ const ProfileSessionCard = ({ session, index }: IProps) => {
         </motion.div>
       )}
 
-      <div className="mt-4 pt-4 border-t border-gray-200 flex items-center justify-between text-xs text-gray-500">
+      <div className="mt-4 pt-4 border-t-2 border-gray-100 flex items-center justify-between text-xs text-gray-600 font-medium">
         <div className="flex items-center gap-1.5">
-          <LuUser className="w-3 h-3" />
+          <LuUser className="w-3.5 h-3.5 text-[#42D5AE]" />
           <span>Owner: {session.ownerFullName}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <BsEye className="w-3 h-3" />
+          <BsEye className="w-3.5 h-3.5 text-[#42D5AE]" />
           <span>{session.private ? "Private" : "Public"}</span>
         </div>
       </div>

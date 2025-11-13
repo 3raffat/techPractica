@@ -31,7 +31,7 @@ export default function Navbar() {
     },
   });
   const userInfo = Data?.data?.user;
-  const fullName = userInfo?.firstName.concat(userInfo?.lastName);
+  const userName = userInfo?.name;
   const handleClick = () => {
     if (location.pathname === "/" || location.pathname === "/home") {
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -73,7 +73,7 @@ export default function Navbar() {
               isSidebarOpen={isSidebarOpen}
               setIsSidebarOpen={setIsSidebarOpen}
               token={token}
-              fullname={fullName!}
+              userName={userName!}
               userEmail={userInfo?.email!}
             />
           </div>

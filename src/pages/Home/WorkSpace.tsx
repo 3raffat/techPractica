@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HiOutlinePlus } from "react-icons/hi";
 import { IErrorResponse, ISessionsResponse, ISystem } from "../../interfaces";
@@ -13,9 +13,10 @@ import { AiOutlineSearch } from "react-icons/ai";
 import { LuFolderOpen } from "react-icons/lu";
 import { IoFilterOutline } from "react-icons/io5";
 import { WorkSpaceSessionCard } from "../../components/Cards/WorkSpaceSessionCard";
-import DeleteSessionModel from "../../components/DeleteSessionModel";
 import Pagination from "../../components/Pagination";
-import { decodeJwtSafe, getToken } from "../../helpers/helpers";
+import { getToken } from "../../helpers/helpers";
+import DeleteModel from "../../components/DeleteSessionModel";
+import EditSessionModal from "../../components/Sessions/EditSessionModal";
 const statuses = ["All", "draft", "in-progress", "completed"];
 const visibilities = ["All", "public", "private"];
 const sortOptions = [
@@ -50,6 +51,8 @@ export default function WorkSpace() {
   const [showFilters, setShowFilters] = useState(false);
   const [SessionId, setSessionId] = useState<string>();
   const [OpenDeleteModal, setOpenDeleteModal] = useState(false);
+  const [OpenEditModal, setOpenEditModal] = useState(false);
+  const [EditSessionId, setEditSessionId] = useState<string | undefined>();
   const isDesktop = useIsDesktop();
 
   /*-----------Handlers--------------------------------------------------------------------*/
@@ -64,6 +67,24 @@ export default function WorkSpace() {
     setSortBy("updated");
     setCurrentPage(1);
   };
+
+  // Check if any filter is active
+  const hasActiveFilters =
+    searchTerm.trim() !== "" ||
+    selectedCategory !== "All" ||
+    selectedStatus !== "All" ||
+    selectedVisibility !== "All";
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    searchTerm,
+    selectedCategory,
+    selectedStatus,
+    selectedVisibility,
+    sortBy,
+  ]);
   const openDeleteModal = (id: string) => {
     setSessionId(id);
     setOpenDeleteModal(true);
@@ -88,23 +109,118 @@ export default function WorkSpace() {
     }
   };
 
+  const openEditModal = (id: string) => {
+    setEditSessionId(id);
+    setOpenEditModal(true);
+  };
+  const closeEditModal = () => {
+    setOpenEditModal(false);
+    setEditSessionId(undefined);
+  };
+
   /*-----------Data--------------------------------------------------------------------*/
   const token = getToken();
   const System = useSystems();
   const Systems = System.data?.data.systems;
+
+  // Fetch all sessions when filters are active, otherwise use pagination
   const useWorkSpaceSession = useAuthQuery<ISessionsResponse>({
-    queryKey: [`SessionData-${currentPage}`],
-    url: `/sessions/by-user?size=${ITEMS_PER_PAGE}&page=${currentPage - 1}`,
+    queryKey: [`SessionData-${hasActiveFilters ? "all" : currentPage}`],
+    url: hasActiveFilters
+      ? `/sessions/by-user?size=1000&page=0`
+      : `/sessions/by-user?size=${ITEMS_PER_PAGE}&page=${currentPage - 1}`,
     config: {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     },
   });
+
   const usersession = useWorkSpaceSession;
-  const Sessionlength = usersession.data?.data.sessions.length ?? 0;
-  const SessionData = usersession.data?.data.sessions ?? [];
-  const totalPages = usersession.data?.data.totalPages ?? 0;
+  const allSessions = usersession.data?.data.sessions ?? [];
+  console.log("All Sessions:", allSessions);
+  // Filter and sort sessions
+  const filteredAndSortedSessions = useMemo(() => {
+    let filtered = [...allSessions];
+
+    // Search filter
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase().trim();
+      filtered = filtered.filter(
+        (session) =>
+          session.name.toLowerCase().includes(searchLower) ||
+          session.description.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Category filter
+    if (selectedCategory !== "All") {
+      filtered = filtered.filter(
+        (session) => session.system.name === selectedCategory
+      );
+    }
+
+    // Status filter
+    if (selectedStatus !== "All") {
+      filtered = filtered.filter(
+        (session) =>
+          session.status.toLowerCase() === selectedStatus.toLowerCase()
+      );
+    }
+
+    // Visibility filter
+    if (selectedVisibility !== "All") {
+      const isPrivate = selectedVisibility === "private";
+      filtered = filtered.filter((session) => session.private === isPrivate);
+    }
+
+    // Sort
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case "name":
+          return a.name.localeCompare(b.name);
+        case "created":
+          // Fallback to name if no date field
+          return a.name.localeCompare(b.name);
+        case "updated":
+          // Fallback to name if no date field
+          return a.name.localeCompare(b.name);
+        case "views":
+          // Fallback to name if no views field
+          return a.name.localeCompare(b.name);
+        case "commits":
+          // Fallback to name if no commits field
+          return a.name.localeCompare(b.name);
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [
+    allSessions,
+    searchTerm,
+    selectedCategory,
+    selectedStatus,
+    selectedVisibility,
+    sortBy,
+  ]);
+
+  // Pagination for filtered results
+  const totalFilteredPages = Math.ceil(
+    filteredAndSortedSessions.length / ITEMS_PER_PAGE
+  );
+  const paginatedSessions = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filteredAndSortedSessions.slice(startIndex, endIndex);
+  }, [filteredAndSortedSessions, currentPage]);
+
+  const Sessionlength = paginatedSessions.length;
+  const SessionData = paginatedSessions;
+  const totalPages = hasActiveFilters
+    ? totalFilteredPages
+    : usersession.data?.data.totalPages ?? 0;
   /*-------------------------------------------------------------------------------*/
 
   return (
@@ -123,7 +239,7 @@ export default function WorkSpace() {
                 Workspace{" "}
               </h1>
               <p className="text-xl text-[#42D5AE]/80 max-w-2xl">
-                Your personal space for managing projects
+                Your personal space for managing Sessions
               </p>
             </div>
             <Link
@@ -131,7 +247,7 @@ export default function WorkSpace() {
               className="bg-white text-[#022639] hover:bg-gray-50 px-8 py-4 rounded-xl font-bold transition-all duration-300 flex items-center gap-3 shadow-lg"
             >
               <HiOutlinePlus className="w-5 h-5" />
-              New Project
+              New Session
             </Link>
           </motion.div>
         </div>
@@ -148,7 +264,7 @@ export default function WorkSpace() {
                 type="text"
                 placeholder="Search projects..."
                 value={searchTerm}
-                //  onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none transition-all"
               />
             </div>
@@ -168,7 +284,7 @@ export default function WorkSpace() {
                 <span className="text-sm font-medium text-gray-700">Sort:</span>
                 <select
                   value={sortBy}
-                  //  onChange={(e) => setSortBy(e.target.value)}
+                  onChange={(e) => setSortBy(e.target.value)}
                   className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none bg-white"
                 >
                   {sortOptions.map((option) => (
@@ -269,34 +385,59 @@ export default function WorkSpace() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Projects Grid */}
           <AnimatePresence mode="wait">
-            {Sessionlength > 0 ? (
-              <motion.div
-                key={currentPage}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 min-h-screen"
-              >
-                {SessionData.map((session, index) => (
-                  <motion.div
-                    key={session.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
+            {filteredAndSortedSessions.length > 0 ? (
+              Sessionlength > 0 ? (
+                <motion.div
+                  key={`${currentPage}-${searchTerm}-${selectedCategory}-${selectedStatus}-${selectedVisibility}-${sortBy}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                >
+                  {SessionData.map((session, index) => (
+                    <motion.div
+                      key={session.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <WorkSpaceSessionCard
+                        session={session}
+                        onDelete={() => openDeleteModal(session.id)}
+                        onClick={() =>
+                          router(`/workspace/session/${session.id}`, {
+                            state: { session: session },
+                          })
+                        }
+                        onEdit={openEditModal}
+                      />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center py-12"
+                >
+                  <div className="text-gray-400 mb-4">
+                    <LuFolderOpen className="h-12 w-12 mx-auto" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No more projects on this page
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Try going to the previous page or adjusting your filters.
+                  </p>
+                  <button
+                    onClick={() => setCurrentPage(1)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                   >
-                    <WorkSpaceSessionCard
-                      session={session}
-                      onDelete={() => openDeleteModal(session.id)}
-                      onClick={() =>
-                        router(`/workspace/session/${session.id}`, {
-                          state: { session: session },
-                        })
-                      }
-                    />
-                  </motion.div>
-                ))}
-              </motion.div>
+                    Go to First Page
+                  </button>
+                </motion.div>
+              )
             ) : (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -349,10 +490,17 @@ export default function WorkSpace() {
           />
         </div>
       </section>
-      <DeleteSessionModel
+      <DeleteModel
         OpenDeleteModal={OpenDeleteModal}
         closeDeleteModal={closeDeleteModal}
-        onSubmitRemoveSession={onSubmitRemoveSession}
+        onSubmitRemove={onSubmitRemoveSession}
+        title="Remove Session"
+        description="Are you sure you want to remove this session? This action cannot be undone."
+      />
+      <EditSessionModal
+        open={OpenEditModal}
+        onClose={closeEditModal}
+        sessionId={EditSessionId}
       />
     </div>
   );

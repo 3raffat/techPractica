@@ -33,8 +33,8 @@ const ProfilePage = () => {
   return (
     <>
       {isSuccess ? (
-        <div className="min-h-screen bg-gray-50">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
             {/* Profile Header */}
             <ProfileHeader
               user={userInfo!}
@@ -46,16 +46,18 @@ const ProfilePage = () => {
               {/* Left Sidebar */}
               <div className="space-y-6">
                 {/* Total Sessions Card */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                <div className="bg-white rounded-3xl shadow-lg border-2 border-gray-200 p-6 hover:shadow-xl transition-all duration-300">
                   <div className="flex items-center gap-4">
-                    <div className="p-3 bg-gradient-to-r from-[#42D5AE] to-[#38b28d] rounded-xl">
-                      <LuFolderCode className="w-6 h-6 text-white" />
+                    <div className="p-4 bg-gradient-to-br from-[#42D5AE] via-[#3fc9a0] to-[#38b28d] rounded-xl shadow-lg">
+                      <LuFolderCode className="w-7 h-7 text-white" />
                     </div>
                     <div>
-                      <p className="text-3xl font-bold text-gray-900">
+                      <p className="text-4xl font-bold text-[#022639]">
                         {session?.totalItems ?? 0}
                       </p>
-                      <p className="text-sm text-gray-600">Total Sessions</p>
+                      <p className="text-sm text-gray-600 font-semibold">
+                        Total Sessions
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -73,7 +75,8 @@ const ProfilePage = () => {
 
               <div className="lg:col-span-2">
                 <div className="mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-3xl font-bold text-[#022639] flex items-center gap-3">
+                    <span className="h-1.5 w-12 bg-gradient-to-r from-[#42D5AE] to-[#38b28d] rounded-full"></span>
                     My Sessions
                   </h2>
                 </div>

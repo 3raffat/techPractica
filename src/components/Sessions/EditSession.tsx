@@ -13,12 +13,7 @@ import {
   useForm,
   useWatch,
 } from "react-hook-form";
-import {
-  IErrorResponse,
-  IField,
-  ISystem,
-  SessionResponse,
-} from "../../interfaces";
+import { ApiError, IField, ISystem, SessionResponse } from "../../interfaces";
 import { useEffect, useMemo } from "react";
 import { useFields, useSystems, useTechnologies } from "../../api";
 import { useQueryClient } from "@tanstack/react-query";
@@ -154,10 +149,10 @@ const EditSession = () => {
       setTimeout(() => {
         queryClient.invalidateQueries({ queryKey: ["SessionData-All"] });
       }, 500);
-    } catch (error) {
-      const err = error as AxiosError<IErrorResponse>;
-
-      toast.error(`${err.message}`, {
+    } catch (err) {
+      const error = err as AxiosError<ApiError>;
+      console.log(error.response?.data.message);
+      toast.error(`${error.response?.data.message}`, {
         position: "top-right",
         duration: 2000,
       });

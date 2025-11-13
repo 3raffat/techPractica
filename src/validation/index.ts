@@ -91,7 +91,7 @@ export const SessionSchema = yup.object({
 export const userProfileSchema = yup.object({
   firstName: yup
     .string()
-    .min(5, "first Name must be at least 5 characters")
+    .min(3, "first Name must be at least 3 characters")
     .max(15, "first Name must be at most 15 characters")
     .required("First Name is required"),
   lastName: yup

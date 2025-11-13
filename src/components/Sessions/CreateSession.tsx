@@ -1,5 +1,3 @@
-"use client";
-
 import { useNavigate } from "react-router-dom";
 import { IoSaveOutline } from "react-icons/io5";
 import { LuArrowLeft } from "react-icons/lu";
@@ -11,7 +9,7 @@ import {
   useAuthQuery,
 } from "../../imports";
 import type {
-  IErrorResponse,
+  ApiError,
   IField,
   IProfileResponse,
   ISystem,
@@ -120,6 +118,7 @@ const CreateSession = () => {
         },
       });
       methods.reset();
+
       Navigate("/workspace");
       toast.success("Session created successfully", {
         position: "top-right",
@@ -128,10 +127,10 @@ const CreateSession = () => {
       setTimeout(() => {
         queryClient.invalidateQueries({ queryKey: ["SessionData-All"] });
       }, 500);
-    } catch (error) {
-      const err = error as AxiosError<IErrorResponse>;
-
-      toast.error(`${err.message}`, {
+    } catch (err) {
+      const error = err as AxiosError<ApiError>;
+      console.log(error.response?.data.message);
+      toast.error(`${error.response?.data.message}`, {
         position: "top-right",
         duration: 2000,
       });

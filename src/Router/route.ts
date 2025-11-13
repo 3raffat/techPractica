@@ -1,7 +1,8 @@
 import { IconType } from "react-icons";
-import { FiCompass } from "react-icons/fi";
+import { FiCompass, FiUsers } from "react-icons/fi";
 import { LuUser } from "react-icons/lu";
 import { GrHomeRounded } from "react-icons/gr";
+import { VscSettingsGear } from "react-icons/vsc";
 
 interface Inav {
   path: string;
@@ -25,4 +26,14 @@ export const NavLinks: Inav[] = [
     path: "/workspace",
     icon: LuUser,
   },
+];
+interface IAdminNav {
+  id: string;
+  label: string;
+  icon: IconType;
+}
+
+export const adminNav: IAdminNav[] = [
+  { id: "users", label: "Users", icon: FiUsers },
+  { id: "content", label: "Content", icon: VscSettingsGear },
 ];

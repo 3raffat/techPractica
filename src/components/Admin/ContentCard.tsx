@@ -1,10 +1,12 @@
 import { motion } from "framer-motion";
 import { IData } from "../../interfaces";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FiEdit3, FiTrash2 } from "react-icons/fi";
 interface IProps {
   data: IData;
+  onEdit?: (data: IData) => void;
+  onDelete: (id: string) => void;
 }
-const ContentCard = ({ data }: IProps) => {
+const ContentCard = ({ data, onDelete, onEdit }: IProps) => {
   return (
     <>
       <motion.div
@@ -21,16 +23,16 @@ const ContentCard = ({ data }: IProps) => {
           </div>
           <div className="flex items-center gap-1">
             <button
-              // onClick={() => onEditTechnology(tech)}
+              onClick={() => onEdit?.(data)}
               className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
             >
-              <FaEdit className="w-4 h-4 text-gray-500" />
+              <FiEdit3 className="w-4 h-4 text-gray-500" />
             </button>
             <button
-              // onClick={() => onDeleteTechnology(tech.id)}
+              onClick={() => onDelete(data.id)}
               className="p-2 rounded-xl hover:bg-red-50 transition-colors"
             >
-              <FaTrash className="w-4 h-4 text-red-500" />
+              <FiTrash2 className="w-4 h-4 text-red-500" />
             </button>
           </div>
         </div>

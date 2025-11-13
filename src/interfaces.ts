@@ -74,6 +74,7 @@ export interface ISession {
   description: string;
   status: string;
   system: ISystem;
+  role: string;
   requirements: IRequirement[];
   ownerFullName: string;
   private: boolean;
@@ -307,4 +308,68 @@ export interface IUserProfileRequest {
 export interface IData {
   id: string;
   name: string;
+}
+export type RequestFormData = {
+  brief: string;
+  requirementName: string;
+};
+/*-------------------------------------------------------------------------------------------------- */
+export interface ApiError {
+  timestamp: string;
+  status: number;
+  message: string;
+  code: string;
+}
+/*-------------------------------------------------------------------------------------------------- */
+export interface Field {
+  id: string;
+  name: string;
+}
+
+export interface Technology {
+  id: string;
+  name: string;
+  fields: Field[];
+}
+
+export interface ISkills {
+  technologies: Technology[];
+}
+
+export interface Root {
+  totalSessions: number;
+  userId: string;
+  fullName: string;
+  skills: ISkills;
+  brief: string;
+  email: string;
+  field: Field;
+  requestDate: string;
+  state: string;
+  requestId: string;
+}
+export interface RequestsResponse {
+  data: {
+    totalSessions: number;
+    userId: string;
+    fullName: string;
+    skills: {
+      technologies: {
+        id: string;
+        name: string;
+        fields: {
+          id: string;
+          name: string;
+        }[];
+      }[];
+    };
+    brief: string;
+    email: string;
+    field: Field;
+    requestDate: string;
+    state: string;
+    requestId: string;
+  }[];
+  status: number;
+  message: string;
 }
