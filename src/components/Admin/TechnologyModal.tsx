@@ -1,6 +1,6 @@
 import { FaSave, FaTimes } from "react-icons/fa";
 import { motion } from "framer-motion";
-import { IErrorResponse, IField } from "../../interfaces";
+import { IErrorResponse, IField, ITechnology } from "../../interfaces";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
 import Inputs from "../ui/Input";
 import Select from "../ui/SelectName";
@@ -9,43 +9,87 @@ import { getToken } from "../../helpers/helpers";
 import toast from "react-hot-toast";
 import { AxiosError } from "axios";
 import { useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+
+interface ITechRec {
+  name: string;
+  fieldNames: string[];
+}
+
 interface IProps {
   isOpen: boolean;
   onClose: () => void;
   Fields: IField[];
+  technology?: ITechnology | null; // if provided → edit mode
 }
-export function TechnologyModal({ Fields, isOpen, onClose }: IProps) {
+
+export function TechnologyModal({ Fields, isOpen, onClose, technology }: IProps) {
   const queryClient = useQueryClient();
-  if (!isOpen) return null;
   const token = getToken();
-  interface ITechRec {
-    name: string;
-    fieldNames: string[];
-  }
-  const methods = useForm<ITechRec>();
+  
+  const methods = useForm<ITechRec>({
+    defaultValues: { name: "", fieldNames: [] },
+  });
+
+  const { reset } = methods;
+  const isEditMode = !!technology;
+
+  // 🔹 When modal opens or technology changes → update form values
+  useEffect(() => {
+    if (isOpen) {
+      if (technology) {
+        // Convert technology.fields to fieldNames array
+        const fieldNames = technology.fields?.map((field) => field.name) || [];
+        reset({ 
+          name: technology.name,
+          fieldNames: fieldNames
+        });
+      } else {
+        reset({ name: "", fieldNames: [] });
+      }
+    }
+  }, [isOpen, technology, reset]);
+
+  if (!isOpen) return null;
+
   const onSubmit: SubmitHandler<ITechRec> = async (data) => {
+    // Ensure fieldNames is always an array
+    const fieldNamesArray = Array.isArray(data.fieldNames) 
+      ? data.fieldNames 
+      : [data.fieldNames as unknown as string];
+    
     const payload = {
-      ...data,
-      fieldNames: [data.fieldNames as unknown as string], // now it's an array
+      name: data.name,
+      fieldNames: fieldNamesArray,
     };
-    console.log(payload);
+
     try {
-      await axiosInstance.post("/admin/technologies/", payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      toast.success("Techonlogy created successfully", {
-        position: "top-right",
-        duration: 1000,
-      });
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["technologiesData"] });
-      }, 500);
+      if (isEditMode && technology?.id) {
+        await axiosInstance.put(`/admin/technologies/${technology.id}/`, payload, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        toast.success("Technology updated successfully", {
+          position: "top-right",
+          duration: 1000,
+        });
+      } else {
+        await axiosInstance.post("/admin/technologies/", payload, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        toast.success("Technology created successfully", {
+          position: "top-right",
+          duration: 1000,
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ["technologiesData"] });
+      onClose();
     } catch (error) {
       const err = error as AxiosError<IErrorResponse>;
-
-      toast.error(`${err.message}`, {
+      toast.error(err.response?.data?.message || "Something went wrong", {
         position: "top-right",
         duration: 2000,
       });
@@ -71,8 +115,13 @@ export function TechnologyModal({ Fields, isOpen, onClose }: IProps) {
         <div className="p-8 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div>
+              <h2 className="text-lg font-semibold text-gray-900">
+                {isEditMode ? "Edit Technology" : "Create Technology"}
+              </h2>
               <p className="text-sm text-gray-600 mt-1">
-                Configure technology details
+                {isEditMode
+                  ? "Update technology details below"
+                  : "Configure technology details"}
               </p>
             </div>
             <button
@@ -126,7 +175,7 @@ export function TechnologyModal({ Fields, isOpen, onClose }: IProps) {
                 className="flex-1 px-6 py-3.5 bg-gradient-to-r from-[#42D5AE] to-[#38b28d] hover:shadow-lg hover:shadow-[#42D5AE]/25 text-white rounded-xl transition-all duration-300 font-semibold flex items-center justify-center gap-2"
               >
                 <FaSave className="w-4 h-4" />
-                {"Create"}
+                {isEditMode ? "Update" : "Create"}
               </button>
             </div>
           </form>

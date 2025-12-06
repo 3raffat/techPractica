@@ -99,13 +99,13 @@ const RightSection = ({
         ) : (
           <div className="hidden sm:flex items-center gap-2">
             <Link
-              to="/auth"
+              to="/auth?mode=login"
               className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-[#42D5AE] transition-colors"
             >
               Login
             </Link>
             <Link
-              to="/auth"
+              to="/auth?mode=register"
               className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-[#42D5AE] to-[#38b28d] text-white rounded-xl hover:shadow-lg transition-all duration-300"
             >
               Sign Up

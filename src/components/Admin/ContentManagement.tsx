@@ -20,8 +20,11 @@ export function ModernContentManagement() {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isTechnologyModalOpen, setIsTechnologyModalOpen] = useState(false);
   const [isFieldModalOpen, setIsFieldModalOpen] = useState(false);
-  const [isFieldModalOpenEdit, setIsFieldModalOpenEdit] = useState(false);
   const [selectedField, setSelectedField] = useState<any | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<any | null>(null);
+  const [selectedTechnology, setSelectedTechnology] = useState<any | null>(
+    null
+  );
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
     entityType?: "category" | "field" | "technology";
@@ -32,19 +35,20 @@ export function ModernContentManagement() {
   const { data: Systems } = useSystems();
   const technologies = useTechnologies().data?.data.technologies ?? [];
   const Fields = useFields().data?.data ?? [];
-  const techData = technologies.map((tech) => ({
-    id: tech.id,
-    name: tech.name,
-  }));
+  // Keep full technology data for editing (includes fields)
+  const techData = technologies;
   /*--Habdler------------------------------------------------------------------------------------------------ */
   const handleAddCategory = () => {
+    setSelectedCategory(null); // Clear selected category for create mode
     setIsCategoryModalOpen(true);
   };
 
   const handleAddTechnology = () => {
+    setSelectedTechnology(null); // Clear selected technology for create mode
     setIsTechnologyModalOpen(true);
   };
   const handleAddField = () => {
+    setSelectedField(null); // Clear selected field for create mode
     setIsFieldModalOpen(true);
   };
   const openDeleteModal = (
@@ -53,9 +57,17 @@ export function ModernContentManagement() {
   ) => {
     setDeleteModal({ isOpen: true, entityId: id, entityType: type });
   };
-  const handleEdit = (field: any) => {
+  const handleEditField = (field: any) => {
     setSelectedField(field); // pass existing field → edit mode
     setIsFieldModalOpen(true);
+  };
+  const handleEditCategory = (category: any) => {
+    setSelectedCategory(category); // pass existing category → edit mode
+    setIsCategoryModalOpen(true);
+  };
+  const handleEditTechnology = (technology: any) => {
+    setSelectedTechnology(technology); // pass existing technology → edit mode
+    setIsTechnologyModalOpen(true);
   };
   const closeDeleteModal = () => setDeleteModal({ isOpen: false });
   const handleDelete = () => {
@@ -200,6 +212,7 @@ export function ModernContentManagement() {
                 <ContentCard
                   data={data}
                   key={data.id}
+                  onEdit={handleEditCategory}
                   onDelete={() => {
                     openDeleteModal(data.id, "category");
                   }}
@@ -223,12 +236,13 @@ export function ModernContentManagement() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {techData.map((data: IData) => (
+              {techData.map((tech: any) => (
                 <ContentCard
-                  data={data}
-                  key={data.id}
+                  data={{ id: tech.id, name: tech.name }}
+                  key={tech.id}
+                  onEdit={() => handleEditTechnology(tech)}
                   onDelete={() => {
-                    openDeleteModal(data.id, "technology");
+                    openDeleteModal(tech.id, "technology");
                   }}
                 />
               ))}
@@ -253,6 +267,7 @@ export function ModernContentManagement() {
                 <ContentCard
                   data={data}
                   key={data.id}
+                  onEdit={handleEditField}
                   onDelete={() => {
                     openDeleteModal(data.id, "field");
                   }}
@@ -266,8 +281,12 @@ export function ModernContentManagement() {
         {isTechnologyModalOpen && (
           <TechnologyModal
             isOpen={isTechnologyModalOpen}
-            onClose={() => setIsTechnologyModalOpen(false)}
+            onClose={() => {
+              setIsTechnologyModalOpen(false);
+              setSelectedTechnology(null); // Reset selected technology when closing
+            }}
             Fields={Fields}
+            technology={selectedTechnology}
           />
         )}
       </AnimatePresence>
@@ -275,7 +294,11 @@ export function ModernContentManagement() {
         {isCategoryModalOpen && (
           <SystemModal
             isOpen={isCategoryModalOpen}
-            onClose={() => setIsCategoryModalOpen(false)}
+            onClose={() => {
+              setIsCategoryModalOpen(false);
+              setSelectedCategory(null); // Reset selected category when closing
+            }}
+            system={selectedCategory}
           />
         )}
       </AnimatePresence>
@@ -283,7 +306,11 @@ export function ModernContentManagement() {
         {isFieldModalOpen && (
           <FieldModel
             isOpen={isFieldModalOpen}
-            onClose={() => setIsFieldModalOpen(false)}
+            onClose={() => {
+              setIsFieldModalOpen(false);
+              setSelectedField(null); // Reset selected field when closing
+            }}
+            field={selectedField}
           />
         )}
       </AnimatePresence>

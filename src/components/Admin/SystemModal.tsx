@@ -8,36 +8,68 @@ import toast from "react-hot-toast";
 import axiosInstance from "../../config/axios.config";
 import { getToken } from "../../helpers/helpers";
 import { useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+
+interface ISystem {
+  id?: string;
+  name: string;
+}
+
 interface IProps {
   isOpen: boolean;
   onClose: () => void;
+  system?: ISystem | null; // if provided → edit mode
 }
-export function SystemModal({ isOpen, onClose }: IProps) {
+
+export function SystemModal({ isOpen, onClose, system }: IProps) {
   const queryClient = useQueryClient();
   const token = getToken();
-  interface ISystemRec {
-    name: string;
-  }
-  const methods = useForm<ISystemRec>();
-  const onSubmit: SubmitHandler<ISystemRec> = async (data) => {
-    console.log(data);
+  const methods = useForm<ISystem>({
+    defaultValues: { name: "" },
+  });
+
+  const { reset } = methods;
+  const isEditMode = !!system;
+
+  // 🔹 When modal opens or system changes → update form values
+  useEffect(() => {
+    if (isOpen) {
+      if (system) {
+        reset({ name: system.name }); // fill values for edit mode
+      } else {
+        reset({ name: "" }); // clear values for create mode
+      }
+    }
+  }, [isOpen, system, reset]);
+
+  const onSubmit: SubmitHandler<ISystem> = async (data) => {
     try {
-      await axiosInstance.post("/admin/systems/", data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      toast.success("System created successfully", {
-        position: "top-right",
-        duration: 1000,
-      });
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["SystemsData"] });
-      }, 500);
+      if (isEditMode && system?.id) {
+        await axiosInstance.put(`/admin/systems/${system.id}/`, data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        toast.success("Category updated successfully", {
+          position: "top-right",
+          duration: 1000,
+        });
+      } else {
+        await axiosInstance.post("/admin/systems/", data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        toast.success("Category created successfully", {
+          position: "top-right",
+          duration: 1000,
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ["SystemsData"] });
+      onClose();
     } catch (error) {
       const err = error as AxiosError<IErrorResponse>;
-
-      toast.error(`${err.message}`, {
+      toast.error(err.response?.data?.message || "Something went wrong", {
         position: "top-right",
         duration: 2000,
       });
@@ -64,8 +96,13 @@ export function SystemModal({ isOpen, onClose }: IProps) {
         <div className="p-8 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div>
+              <h2 className="text-lg font-semibold text-gray-900">
+                {isEditMode ? "Edit Category" : "Create Category"}
+              </h2>
               <p className="text-sm text-gray-600 mt-1">
-                Configure System details
+                {isEditMode
+                  ? "Update category details below"
+                  : "Configure category details"}
               </p>
             </div>
             <button
@@ -83,12 +120,12 @@ export function SystemModal({ isOpen, onClose }: IProps) {
           >
             <div>
               <label className="block text-sm font-bold text-gray-900 mb-3">
-                System Name
+                Category Name
               </label>
               <Inputs
                 className="w-full px-4 py-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#42D5AE]/20 focus:border-[#42D5AE] outline-none transition-all text-sm"
-                placeholder="Enter System name"
-                {...methods.register("name")}
+                placeholder="Enter category name"
+                {...methods.register("name", { required: true })}
               />
             </div>
 
@@ -105,7 +142,7 @@ export function SystemModal({ isOpen, onClose }: IProps) {
                 className="flex-1 px-6 py-3.5 bg-gradient-to-r from-[#42D5AE] to-[#38b28d] hover:shadow-lg hover:shadow-[#42D5AE]/25 text-white rounded-xl transition-all duration-300 font-semibold flex items-center justify-center gap-2"
               >
                 <FaSave className="w-4 h-4" />
-                {"Create"}
+                {isEditMode ? "Update" : "Create"}
               </button>
             </div>
           </form>

@@ -90,14 +90,14 @@ const MobileSidebar = ({
                 {!token && (
                   <div className="mt-8 px-6 space-y-3">
                     <Link
-                      to="/auth"
+                      to="/auth?mode=login"
                       className="block w-full text-center px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
                       onClick={() => setIsSidebarOpen(false)}
                     >
                       Login
                     </Link>
                     <Link
-                      to="/auth"
+                      to="/auth?mode=register"
                       className="block w-full text-center px-4 py-3 bg-gradient-to-r from-[#42D5AE] to-[#38b28d] text-white rounded-xl hover:shadow-lg transition-all duration-300 font-medium"
                       onClick={() => setIsSidebarOpen(false)}
                     >

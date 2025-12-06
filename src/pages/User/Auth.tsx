@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { CiLock, CiUser } from "react-icons/ci";
 import toast from "react-hot-toast";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { AxiosError } from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { LoginAxiosResponse } from "../../data/data";
 import { loginSchema, registerSchema } from "../../validation";
 import axiosInstance from "../../config/axios.config";
@@ -29,11 +29,23 @@ import {
   setToken,
 } from "../../helpers/helpers";
 const AuthPage = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const [searchParams] = useSearchParams();
+  const mode = searchParams.get("mode");
+  // Set initial state based on URL parameter, default to login
+  const [isLogin, setIsLogin] = useState(mode === "register" ? false : true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Update isLogin when URL parameter changes
+  useEffect(() => {
+    if (mode === "register") {
+      setIsLogin(false);
+    } else {
+      setIsLogin(true);
+    }
+  }, [mode]);
   const {
     register: registerRegister,
     handleSubmit: RegisterSubmit,
@@ -87,10 +99,21 @@ const AuthPage = () => {
       setToken(response.data.data.token);
       const token = getToken();
       const payload = decodeJwtSafe(token);
-      setRole(payload?.roles[0] ?? null);
-      setRoleAdmin(payload?.roles[1] ?? null);
-      if (isAdmin()) navigate("/admin");
-      navigate("/");
+      const roles = payload?.roles || [];
+
+      // Set roles - find ROLE_USER and ROLE_ADMIN from the roles array
+      const userRole = roles.find((role: string) => role === "ROLE_USER");
+      const adminRole = roles.find((role: string) => role === "ROLE_ADMIN");
+
+      setRole(userRole ?? null);
+      setRoleAdmin(adminRole ?? null);
+
+      // Navigate based on role - check if user has ROLE_ADMIN
+      if (adminRole === "ROLE_ADMIN" || roles.includes("ROLE_ADMIN")) {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       const error = err as AxiosError<ApiError>;
       toast.error(error.response?.data.message || "login invalid", {

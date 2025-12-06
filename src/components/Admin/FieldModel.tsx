@@ -48,7 +48,7 @@ export function FieldModel({ isOpen, onClose, field }: IProps) {
   const onSubmit: SubmitHandler<IField> = async (data) => {
     try {
       if (isEditMode && field?.id) {
-        await axiosInstance.put(`/admin/fields/${field.id}`, data, {
+        await axiosInstance.put(`/admin/fields/${field.id}/`, data, {
           headers: { Authorization: `Bearer ${token}` },
         });
         toast.success("Field updated successfully", {

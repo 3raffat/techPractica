@@ -89,6 +89,11 @@ export interface SocialAccount {
   profileUrl: string;
 }
 
+export interface Skill {
+  id: string;
+  name: string;
+}
+
 export interface User {
   id: string;
   firstName: string;
@@ -99,6 +104,33 @@ export interface User {
   socialAccounts: SocialAccount[];
   brief: string;
   roles: string[];
+  totalSessions: number;
+}
+
+export interface IUsersResponse {
+  data: {
+    userCollection: User[];
+  };
+  status: number;
+  message: string;
+}
+
+export interface IRole {
+  id: string;
+  type: string;
+}
+
+export interface IRolesResponse {
+  data: {
+    roleCollection: IRole[];
+  };
+  status: number;
+  message: string;
+}
+
+export interface IAssignRoleRequest {
+  id: string;
+  roleIds: string[];
 }
 
 export interface Member {
