@@ -1,12 +1,18 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { ISession } from "../../interfaces";
-import { categoriess, getRoleColor, getVisibilityColor } from "../../data/data";
+import {
+  categoriess,
+  getRoleColor,
+  getStatusColor,
+  getVisibilityColor,
+} from "../../data/data";
 import { useNavigate } from "react-router-dom";
 import { BsEye } from "react-icons/bs";
 import { useState } from "react";
 import { FiEdit3, FiMoreVertical } from "react-icons/fi";
 import { LuGitPullRequest } from "react-icons/lu";
 import { RiDeleteBin5Line } from "react-icons/ri";
+import { MdOutlineSpaceDashboard } from "react-icons/md";
 
 interface IProps {
   session: ISession;
@@ -74,8 +80,16 @@ export function WorkSpaceSessionCard({
                     session.role
                   )}`}
                 >
-                  {session.role.charAt(0).toUpperCase() +
-                    session.role.slice(1).toLowerCase()}
+                  {session.role?.charAt(0).toUpperCase() +
+                    session.role?.slice(1).toLowerCase()}
+                </span>
+                <span
+                  className={`text-xs px-3 py-1.5 rounded-full border-2 font-semibold shadow-sm transition-all ${getStatusColor(
+                    session.status
+                  )}`}
+                >
+                  {session.status?.charAt(0).toUpperCase() +
+                    session.status?.slice(1).toLowerCase()}
                 </span>
               </div>
             </div>
@@ -106,15 +120,17 @@ export function WorkSpaceSessionCard({
                       transition={{ duration: 0.2 }}
                       className="absolute right-0 top-full mt-2 w-52 bg-white border-2 border-gray-200 rounded-2xl shadow-2xl z-20 py-2 overflow-hidden"
                     >
-                      <button
-                        onClick={onClick}
-                        className="w-full px-5 py-3 text-left text-sm hover:bg-gradient-to-r hover:from-[#42D5AE]/10 hover:to-transparent flex items-center gap-3 transition-all duration-200 group"
-                      >
-                        <BsEye className="w-4 h-4 text-gray-600 group-hover:text-[#42D5AE] transition-colors" />
-                        <span className="font-medium text-gray-700 group-hover:text-[#022639]">
-                          View Project
-                        </span>
-                      </button>
+                      {session.status === "RUNNING" && (
+                        <button
+                          onClick={onClick}
+                          className="w-full px-5 py-3 text-left text-sm hover:bg-gradient-to-r hover:from-[#42D5AE]/10 hover:to-transparent flex items-center gap-3 transition-all duration-200 group"
+                        >
+                          <MdOutlineSpaceDashboard className="w-4 h-4 text-gray-600 group-hover:text-[#42D5AE] transition-colors" />
+                          <span className="font-medium text-gray-700 group-hover:text-[#022639]">
+                            Task manager
+                          </span>
+                        </button>
+                      )}
                       {session.role != "PARTICIPATE" && (
                         <>
                           {" "}
@@ -203,7 +219,11 @@ export function WorkSpaceSessionCard({
           {/* Actions */}
           <div className="flex gap-3 pt-2 border-t-2 border-gray-100">
             <button
-              onClick={onClick}
+              onClick={() => {
+                Navigate(`/workspace/session/${session.id}`, {
+                  state: { session: session },
+                });
+              }}
               className="flex-1 bg-gradient-to-r from-[#42D5AE] via-[#3fc9a0] to-[#38b28d] hover:from-[#38b28d] hover:via-[#3fc9a0] hover:to-[#42D5AE] text-white py-3 px-4 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
             >
               <BsEye className="w-4 h-4" />

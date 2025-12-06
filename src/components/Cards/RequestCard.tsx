@@ -103,15 +103,6 @@ export default function RequestCard({
                 <span>{formatDate(request.requestDate)}</span>
               </div>
             </div>
-
-            <div className="flex items-center gap-4 text-sm text-gray-600">
-              {request.totalSessions && (
-                <div className="flex items-center gap-1">
-                  <BsAward className="w-4 h-4 text-[#42D5AE]" />
-                  <span>{request.totalSessions} sessions</span>
-                </div>
-              )}
-            </div>
           </div>
         </div>
 
@@ -216,10 +207,6 @@ export default function RequestCard({
             >
               <BsEye className="w-4 h-4" />
               View Profile
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
-              <FiMessageSquare className="w-4 h-4" />
-              Message
             </button>
           </div>
 

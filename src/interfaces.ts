@@ -55,19 +55,6 @@ export interface ISessionsData {
   pageSize: number;
 }
 
-// export interface ISession {
-//   id: string;
-//   name: string;
-//   description: string;
-//   system: {
-//     id: string;
-//     name: string;
-//   };
-//   requirements: IRequirement[];
-//   ownerFullName: string;
-//   private: boolean;
-//   running: boolean;
-// }
 export interface ISession {
   id: string;
   name: string;
@@ -77,8 +64,49 @@ export interface ISession {
   role: string;
   requirements: IRequirement[];
   ownerFullName: string;
+  members: Member[];
   private: boolean;
 }
+
+export interface System {
+  id: string;
+  name: string;
+}
+
+export interface Requirement {
+  requirementId: string;
+  field: string;
+  technologies: string[];
+}
+
+export interface Skill {
+  name: string;
+  id: string;
+}
+
+export interface SocialAccount {
+  platform: string;
+  profileUrl: string;
+}
+
+export interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  name: string;
+  email: string;
+  skills: Skill[];
+  socialAccounts: SocialAccount[];
+  brief: string;
+  roles: string[];
+}
+
+export interface Member {
+  id: string;
+  user: User;
+  role: string;
+}
+
 export interface IRequirement {
   requirementId: string;
   field: string;
@@ -373,3 +401,27 @@ export interface RequestsResponse {
   status: number;
   message: string;
 }
+export interface IUserSession {
+  id: string;
+  fullName: string;
+}
+/*-------------------------------------------------------------------------------------------------- */
+export interface ITask {
+  id: string;
+  title: string;
+  description: string;
+  type: string;
+  dueDate: string;
+  assignees: string[];
+  tags: string[];
+  status: string;
+}
+
+export interface ITasksResponse {
+  data: {
+    tasks: ITask[];
+  };
+  status: number;
+  message: string;
+}
+/*-------------------------------------------------------------------------------------------------- */

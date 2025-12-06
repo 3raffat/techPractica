@@ -1,5 +1,4 @@
 import { Button } from "../imports";
-
 interface IProps {
   OpenDeleteModal: boolean;
   closeDeleteModal: () => void;

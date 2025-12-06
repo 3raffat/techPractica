@@ -9,7 +9,6 @@ function App() {
   return (
     <>
       <ErrorBoundary>
-        {" "}
         <Toaster />
         <AnimatePresence mode="wait">
           <RouterProvider router={router} />

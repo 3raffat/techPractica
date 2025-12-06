@@ -34,6 +34,7 @@ export default function ProjectDetailPage() {
   const fieldName = SessionData?.requirements.map((x) => x.field) ?? [];
   const TechNames =
     SessionData?.requirements.flatMap((x) => x.technologies) ?? [];
+  console.log(SessionData);
   const router = useNavigate();
   /* ------------------ Session Request ------------------ */
   const {

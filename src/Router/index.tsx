@@ -18,6 +18,7 @@ import AuthRoute from "../pages/User/AuthRoute";
 import AdminRoute from "../pages/User/AdminRoute";
 import AdminDashboard from "../pages/Admin/AdminDashboard";
 import SessionRequest from "../components/Sessions/SessionRequest";
+import TasksPage from "../components/TaskManager/TasksPage";
 export const router = createBrowserRouter(
   createRoutesFromElements(
     <>
@@ -35,6 +36,7 @@ export const router = createBrowserRouter(
             <Route path="session/:id/edit" element={<EditSession />} />
             <Route path="session/:id/requests" element={<SessionRequest />} />
             <Route path="session/:id" element={<SessionDetails />} />
+            <Route path="session/:id/task-manager" element={<TasksPage />} />
           </Route>
         </Route>
         <Route element={<ProtectedRoute />}>
@@ -49,14 +51,9 @@ export const router = createBrowserRouter(
           <Route index element={<AuthPage />} />
         </Route>
       </Route>
-
       <Route element={<AdminRoute />}>
         <Route path="admin" element={<AdminDashboard />} />
       </Route>
-
-      {/* <Route path="SessionKanban" element={<HorizontalLayout />}>
-        <Route index element={<KanbanBoard />} />
-      </Route> */}
     </>
   )
 );

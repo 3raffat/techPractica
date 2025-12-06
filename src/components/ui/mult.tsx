@@ -9,27 +9,24 @@ import { Controller, get, useFormContext } from "react-hook-form";
 import { RiExpandUpDownLine } from "react-icons/ri";
 import ErrorMsg from "./ErrorMsg";
 
-type MultiSelectFieldProps<T> = {
+type MultiSelectStringProps = {
   name: string;
   label: string;
-  options: T[];
+  options: string[];
   rules?: object;
-  getLabel: (item: T) => string; // e.g. (o) => o.name
-  getValue: (item: T) => string | number; // e.g. (o) => o.id
 };
 
-export default function MultiSelectField<T>({
+export default function MultiSelectStringField({
   name,
   label,
   options,
   rules = {},
-  getLabel,
-  getValue,
-}: MultiSelectFieldProps<T>) {
+}: MultiSelectStringProps) {
   const {
     control,
     formState: { errors },
   } = useFormContext();
+
   const errorMessage = get(errors, name)?.message as string | undefined;
 
   return (
@@ -38,63 +35,55 @@ export default function MultiSelectField<T>({
       control={control}
       rules={rules}
       render={({ field: { value = [], onChange } }) => (
-        <Listbox value={value} onChange={onChange} multiple>
+        <Listbox
+          value={value}
+          onChange={(vals: string[]) => onChange([...new Set(vals)])} // ← إزالة التكرار
+          multiple
+        >
           <Label className="block text-sm font-medium text-gray-700">
             {label}
           </Label>
+
           <div className="relative mt-1">
             <ListboxButton className="relative w-full cursor-default rounded-md bg-white py-2 pl-3 pr-10 text-left border border-gray-300 shadow-sm sm:text-sm min-h-[42px]">
               <span className="flex flex-wrap gap-2 items-center">
                 {value.length > 0 ? (
-                  value.map((id: string | number, idx: number) => {
-                    const item = options.find((o) => getValue(o) === id);
-                    return (
-                      <span
-                        key={idx}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onChange(
-                            value.filter((v: string | number) => v !== id)
-                          );
-                        }}
-                        className="text-xs px-2 py-1 rounded-full bg-[#42D5AE]/10 text-[#022639] transition cursor-pointer"
-                      >
-                        {item ? getLabel(item) : id}
-                      </span>
-                    );
-                  })
+                  value.map((val: string) => (
+                    <span
+                      key={val}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onChange(value.filter((v: any) => v !== val));
+                      }}
+                      className="text-xs px-2 py-1 rounded-full bg-[#42D5AE]/10 text-[#022639] cursor-pointer"
+                    >
+                      {val}
+                    </span>
+                  ))
                 ) : (
                   <span className="text-gray-400">Select {label}</span>
                 )}
               </span>
+
               <span className="absolute inset-y-0 right-0 flex items-center pr-2">
-                <RiExpandUpDownLine
-                  className="h-5 w-5 text-gray-400"
-                  aria-hidden="true"
-                />
+                <RiExpandUpDownLine className="h-5 w-5 text-gray-400" />
               </span>
             </ListboxButton>
+
             <ListboxOptions className="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 sm:text-sm">
               {options
-                .filter((o) => !value.includes(getValue(o)))
-                .map((option, idx) => (
+                .filter((o) => !value.includes(o))
+                .map((option) => (
                   <ListboxOption
-                    key={idx}
-                    value={getValue(option)}
+                    key={option}
+                    value={option}
                     className="cursor-default select-none relative py-2 pl-3 pr-9 hover:bg-gray-100"
                   >
-                    {({ selected }) => (
-                      <span
-                        className={`block truncate ${
-                          selected ? "font-medium" : "font-normal"
-                        }`}
-                      >
-                        {getLabel(option)}
-                      </span>
-                    )}
+                    <span className="block truncate">{option}</span>
                   </ListboxOption>
                 ))}
             </ListboxOptions>
+
             {errors[name] && <ErrorMsg Msg={errorMessage} />}
           </div>
         </Listbox>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiSearch, FiFilter, FiGrid, FiList, FiSliders } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
@@ -23,87 +23,48 @@ const ITEMS_PER_PAGE = 6;
 
 export default function Explore() {
   /* ----------------States-------------------------------------- */
-
   const router = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showFilters, setShowFilters] = useState(false);
-
-  // ✅ compute flags at top-level (no hooks inside conditionals)
-  const hasActiveFilters =
-    searchTerm.trim() !== "" || selectedCategory !== "All";
-
-  // ✅ reset page when filters change (top-level hook)
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, selectedCategory]);
 
-  /* ----------------Data-------------------------------------- */
-  // Fetch all sessions when filters are active, otherwise use pagination
-  const useExploreSessionx = useAuthQuery<ISessionsResponse>({
-    queryKey: [`SessionData-${hasActiveFilters ? "all" : currentPage}`],
-    url: hasActiveFilters
-      ? `/sessions/?size=1000&page=0`
-      : `/sessions/?size=${ITEMS_PER_PAGE}&page=${currentPage - 1}`,
-  });
-
+  const hasActiveFilters =
+    searchTerm.trim() !== "" || selectedCategory !== "All";
   const System = useSystems();
   const Systems = System.data?.data.systems ?? [];
-  const Session = useExploreSessionx;
-  const allSessions = Session.data?.data.sessions ?? [];
-
-  // Filter and sort sessions
-  const filteredAndSortedSessions = useMemo(() => {
-    let filtered = [...allSessions];
-
-    // Search filter
-    if (searchTerm.trim()) {
-      const searchLower = searchTerm.toLowerCase().trim();
-      filtered = filtered.filter(
-        (session) =>
-          session.name.toLowerCase().includes(searchLower) ||
-          session.description.toLowerCase().includes(searchLower) ||
-          session.requirements.some((req) =>
-            req.technologies.some((tech) =>
-              tech.toLowerCase().includes(searchLower)
-            )
-          ) ||
-          session.requirements.some((req) =>
-            req.field.toLowerCase().includes(searchLower)
-          )
-      );
-    }
-
-    // Category filter
+  const buildApiUrl = () => {
     if (selectedCategory !== "All") {
-      filtered = filtered.filter(
-        (session) => session.system.name === selectedCategory
-      );
+      var categoryId = Systems.find((sys) => sys.name === selectedCategory)?.id;
+      return `/sessions/${categoryId}?size=${ITEMS_PER_PAGE}&page=${
+        currentPage - 1
+      }`;
     }
+    return `/sessions/?size=${ITEMS_PER_PAGE}&page=${currentPage - 1}`;
+  }; /* ----------------Data-------------------------------------- */
+  // Fetch paginated sessions from API
+  const useExploreSessionx = useAuthQuery<ISessionsResponse>({
+    queryKey: [`SessionData-${currentPage}`],
+    url: buildApiUrl(),
+  });
 
-    return filtered;
-  }, [allSessions, searchTerm, selectedCategory]);
+  const Session = useExploreSessionx;
 
-  // Pagination for filtered results
-  const totalFilteredPages = Math.ceil(
-    filteredAndSortedSessions.length / ITEMS_PER_PAGE
-  );
-
-  const paginatedSessions = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    return filteredAndSortedSessions.slice(startIndex, endIndex);
-  }, [filteredAndSortedSessions, currentPage]);
-
-  const Sessionlength = paginatedSessions.length;
-  const SessionData = paginatedSessions;
-  const totalPages = hasActiveFilters
-    ? totalFilteredPages
-    : Session.data?.data.totalPages ?? 0;
-
+  const totalPages = hasActiveFilters ? 0 : Session.data?.data.totalPages ?? 0;
+  const SessionData = Session.data?.data.sessions ?? [];
+  const Sessionlength = SessionData.length;
+  console.log(SessionData);
   const isDesktop = useIsDesktop();
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setSelectedCategory("All");
+    setCurrentPage(1);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -221,12 +182,14 @@ export default function Explore() {
                 </div>
 
                 {/* Clear Filters */}
-                <button
-                  onClick={clearFilters}
-                  className="text-sm text-gray-600 hover:text-gray-800 transition-colors"
-                >
-                  Clear All
-                </button>
+                {hasActiveFilters && (
+                  <button
+                    onClick={clearFilters}
+                    className="text-sm text-gray-600 hover:text-gray-800 transition-colors underline"
+                  >
+                    Clear All
+                  </button>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -236,63 +199,41 @@ export default function Explore() {
       {/* Results */}
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Results Count */}
+
           {/* Projects Grid/List */}
           <AnimatePresence mode="wait">
-            {filteredAndSortedSessions.length > 0 ? (
-              Sessionlength > 0 ? (
-                <motion.div
-                  key={`${viewMode}-${currentPage}-${searchTerm}-${selectedCategory}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className={
-                    viewMode === "grid"
-                      ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-                      : "space-y-6"
-                  }
-                >
-                  {SessionData?.map((Session: ISession, index: number) => (
-                    <motion.div
-                      key={Session.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                    >
-                      <ExploreProjectCard
-                        project={Session}
-                        onClick={() =>
-                          router(`/explore/session/${Session.id}`, {
-                            state: { session: Session },
-                          })
-                        }
-                      />
-                    </motion.div>
-                  ))}
-                </motion.div>
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center py-12"
-                >
-                  <div className="text-gray-400 mb-4">
-                    <FiFilter className="h-12 w-12 mx-auto" />
-                  </div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No more projects on this page
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    Try going to the previous page or adjusting your filters.
-                  </p>
-                  <button
-                    onClick={() => setCurrentPage(1)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            {Sessionlength > 0 ? (
+              <motion.div
+                key={`${viewMode}-${currentPage}-${searchTerm}-${selectedCategory}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className={
+                  viewMode === "grid"
+                    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                    : "space-y-6"
+                }
+              >
+                {SessionData?.map((Session: ISession, index: number) => (
+                  <motion.div
+                    key={Session.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
                   >
-                    Go to First Page
-                  </button>
-                </motion.div>
-              )
+                    <ExploreProjectCard
+                      project={Session}
+                      onClick={() =>
+                        router(`/explore/session/${Session.id}`, {
+                          state: { session: Session },
+                        })
+                      }
+                    />
+                  </motion.div>
+                ))}
+              </motion.div>
             ) : (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -303,14 +244,14 @@ export default function Explore() {
                   <FiFilter className="h-12 w-12 mx-auto" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No projects found
+                  No Sessions found
                 </h3>
                 <p className="text-gray-600 mb-4">
-                  {searchTerm || selectedCategory !== "All"
-                    ? "Try adjusting your search criteria or filters to find more projects."
+                  {hasActiveFilters
+                    ? "Try adjusting your search criteria or filters to find more Sessions."
                     : "No projects available at the moment."}
                 </p>
-                {(searchTerm || selectedCategory !== "All") && (
+                {hasActiveFilters && (
                   <button
                     onClick={clearFilters}
                     className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
@@ -321,19 +262,19 @@ export default function Explore() {
               </motion.div>
             )}
           </AnimatePresence>
-          <Pagination
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-            totalPages={totalPages}
-          />
+
+          {/* Pagination - Only show when no filters are active */}
+          {Sessionlength > 0 && (
+            <div className="mt-8">
+              <Pagination
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                totalPages={totalPages}
+              />
+            </div>
+          )}
         </div>
       </section>
     </div>
   );
-}
-
-// helpers
-function clearFilters() {
-  // This will be shadowed by the component-scoped clearFilters.
-  // Kept here only to satisfy TypeScript when pasting outside the component.
 }

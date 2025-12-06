@@ -123,3 +123,35 @@ export const userProfileSchema = yup.object({
     .required(),
 });
 export type IUserProfileRequestType = yup.InferType<typeof userProfileSchema>;
+
+export const TaskSchema = yup.object({
+  title: yup
+    .string()
+    .required("Title is required")
+    .min(3, "Title must be at least 3 characters")
+    .max(100, "Title must be at most 100 characters"),
+  description: yup
+    .string()
+    .optional()
+    .max(1000, "Description must be at most 1000 characters"),
+  type: yup.string().required("Type is required"),
+  dueDate: yup
+    .string()
+    .nullable()
+    .optional()
+    .transform((value, originalValue) => {
+      return originalValue === "" ? null : value;
+    }),
+  assignees: yup
+    .array()
+    .of(yup.string().uuid("Each assignee must be a valid UUID"))
+    .default([])
+    .optional(),
+  tags: yup
+    .array()
+    .of(yup.string().min(1, "Tag cannot be empty"))
+    .default([])
+    .optional(),
+});
+
+export type TaskFormType = yup.InferType<typeof TaskSchema>;

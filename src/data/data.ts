@@ -553,8 +553,8 @@ export const getStatusColor = (status: string) => {
       return "bg-yellow-100 text-yellow-800 border-yellow-200";
     case "ACTIVE":
       return "bg-green-100 text-green-800 border-green-200";
-    case "COMPLETED":
-      return "bg-blue-100 text-blue-800 border-blue-200";
+    case "RUNNING":
+      return "bg-pink-100 text-pink-800 border-pink-200";
     default:
       return "bg-gray-100 text-gray-800 border-gray-200";
   }
@@ -627,3 +627,15 @@ export const getRoleColor = (role: string) => {
     ? "bg-red-50 text-red-600 border-red-200"
     : "bg-sky-50 text-sky-600 border-sky-200";
 };
+
+export const columns = [
+  { id: "todo", title: "To Do", color: "#6B7280" },
+  { id: "in-progress", title: "In Progress", color: "#3B82F6" },
+  { id: "review", title: "Review", color: "#F59E0B" },
+  { id: "done", title: "Done", color: "#10B981" },
+];
+export const taskTypes = [
+  { id: "bug", name: "Bug", color: "#EF4444", icon: FaBug },
+  { id: "feature", name: "Feature", color: "#3B82F6", icon: FaBolt },
+  { id: "improvement", name: "Improvement", color: "#F59E0B", icon: FaTools },
+];

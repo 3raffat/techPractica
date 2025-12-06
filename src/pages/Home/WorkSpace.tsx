@@ -17,6 +17,7 @@ import Pagination from "../../components/Pagination";
 import { getToken } from "../../helpers/helpers";
 import DeleteModel from "../../components/DeleteSessionModel";
 import EditSessionModal from "../../components/Sessions/EditSessionModal";
+import { stat } from "fs";
 const statuses = ["All", "draft", "in-progress", "completed"];
 const visibilities = ["All", "public", "private"];
 const sortOptions = [
@@ -406,9 +407,10 @@ export default function WorkSpace() {
                         session={session}
                         onDelete={() => openDeleteModal(session.id)}
                         onClick={() =>
-                          router(`/workspace/session/${session.id}`, {
-                            state: { session: session },
-                          })
+                          router(
+                            `/workspace/session/${session.id}/task-manager`,
+                            { state: { session: session } }
+                          )
                         }
                         onEdit={openEditModal}
                       />
