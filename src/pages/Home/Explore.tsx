@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiSearch, FiFilter, FiGrid, FiList, FiSliders } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
@@ -33,11 +33,20 @@ export default function Explore() {
     setCurrentPage(1);
   }, [searchTerm, selectedCategory]);
 
-  const hasActiveFilters =
-    searchTerm.trim() !== "" || selectedCategory !== "All";
+  const hasSearchFilter = searchTerm.trim() !== "";
+  const hasActiveFilters = hasSearchFilter || selectedCategory !== "All";
   const System = useSystems();
   const Systems = System.data?.data.systems ?? [];
+
+  /* ----------------Data-------------------------------------- */
+  // Fetch all sessions when search is active (for client-side filtering)
+  // Otherwise use server-side pagination (with category filter if selected)
   const buildApiUrl = () => {
+    if (hasSearchFilter) {
+      // When search is active, fetch all sessions for client-side filtering
+      return `/sessions/?size=10000&page=0`;
+    }
+    // When no search, use server-side pagination
     if (selectedCategory !== "All") {
       var categoryId = Systems.find((sys) => sys.name === selectedCategory)?.id;
       return `/sessions/${categoryId}?size=${ITEMS_PER_PAGE}&page=${
@@ -45,19 +54,79 @@ export default function Explore() {
       }`;
     }
     return `/sessions/?size=${ITEMS_PER_PAGE}&page=${currentPage - 1}`;
-  }; /* ----------------Data-------------------------------------- */
+  };
+
   // Fetch paginated sessions from API
   const useExploreSessionx = useAuthQuery<ISessionsResponse>({
-    queryKey: [`SessionData-${currentPage}`],
+    queryKey: [
+      `SessionData-${
+        hasSearchFilter ? "all" : currentPage
+      }-${selectedCategory}`,
+    ],
     url: buildApiUrl(),
   });
 
   const Session = useExploreSessionx;
+  const allSessions = Session.data?.data.sessions ?? [];
 
-  const totalPages = hasActiveFilters ? 0 : Session.data?.data.totalPages ?? 0;
-  const SessionData = Session.data?.data.sessions ?? [];
+  // Filter and sort sessions client-side when search is active
+  const filteredAndSortedSessions = useMemo(() => {
+    let filtered = [...allSessions];
+
+    // Search filter - filter by session name only (only when search is active)
+    if (hasSearchFilter) {
+      const searchLower = searchTerm.toLowerCase().trim();
+      filtered = filtered.filter((session) =>
+        session.name.toLowerCase().includes(searchLower)
+      );
+
+      // Category filter (only needed when search is active, otherwise handled server-side)
+      if (selectedCategory !== "All") {
+        filtered = filtered.filter(
+          (session) => session.system.name === selectedCategory
+        );
+      }
+    }
+
+    return filtered;
+  }, [allSessions, searchTerm, selectedCategory, hasSearchFilter]);
+
+  // Pagination for filtered results
+  const totalFilteredPages = Math.ceil(
+    filteredAndSortedSessions.length / ITEMS_PER_PAGE
+  );
+
+  // When search is active, use client-side pagination on filtered results
+  // When no search, use server-side pagination directly (no client-side pagination needed)
+  const paginatedSessions = useMemo(() => {
+    if (hasSearchFilter) {
+      // Client-side pagination for filtered results
+      const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+      const endIndex = startIndex + ITEMS_PER_PAGE;
+      return filteredAndSortedSessions.slice(startIndex, endIndex);
+    } else {
+      // No search: use sessions directly from server (already paginated)
+      return filteredAndSortedSessions;
+    }
+  }, [filteredAndSortedSessions, currentPage, hasSearchFilter]);
+
+  const SessionData = paginatedSessions;
   const Sessionlength = SessionData.length;
-  console.log(SessionData);
+
+  // Calculate total pages: use filtered pages when search is active, otherwise use server pagination
+  const totalPages = hasSearchFilter
+    ? totalFilteredPages
+    : Session.data?.data.totalPages ?? 0;
+
+  // Ensure currentPage doesn't exceed totalPages and is at least 1
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    } else if (currentPage < 1) {
+      setCurrentPage(1);
+    }
+  }, [totalPages, currentPage]);
+
   const isDesktop = useIsDesktop();
 
   const clearFilters = () => {
@@ -97,7 +166,7 @@ export default function Explore() {
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <input
                 type="text"
-                placeholder="Search projects, technologies..."
+                placeholder="Search by session name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none transition-all"
@@ -234,6 +303,28 @@ export default function Explore() {
                   </motion.div>
                 ))}
               </motion.div>
+            ) : filteredAndSortedSessions.length > 0 ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-12"
+              >
+                <div className="text-gray-400 mb-4">
+                  <FiFilter className="h-12 w-12 mx-auto" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No more sessions on this page
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Try going to the previous page or adjusting your filters.
+                </p>
+                <button
+                  onClick={() => setCurrentPage(1)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Go to First Page
+                </button>
+              </motion.div>
             ) : (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -263,8 +354,8 @@ export default function Explore() {
             )}
           </AnimatePresence>
 
-          {/* Pagination - Only show when no filters are active */}
-          {Sessionlength > 0 && (
+          {/* Pagination */}
+          {totalPages > 0 && (
             <div className="mt-8">
               <Pagination
                 currentPage={currentPage}

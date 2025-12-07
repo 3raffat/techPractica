@@ -639,3 +639,7 @@ export const taskTypes = [
   { id: "feature", name: "Feature", color: "#3B82F6", icon: FaBolt },
   { id: "improvement", name: "Improvement", color: "#F59E0B", icon: FaTools },
 ];
+/*-------------------------------------------------------------------------------------------------- */
+export const statuses = ["All", "WAITING", "RUNNING", "ENDED"];
+
+export const visibilities = ["All", "public", "private"];

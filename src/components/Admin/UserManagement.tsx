@@ -320,8 +320,17 @@ export function ModernUserManagement() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => openAssignRoleModal(user)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
-                        title="Assign Roles"
+                        disabled={user.roles?.includes("ROLE_ADMIN") || false}
+                        className={`p-2 rounded-xl transition-colors ${
+                          user.roles?.includes("ROLE_ADMIN")
+                            ? "text-gray-400 bg-gray-100 cursor-not-allowed opacity-50"
+                            : "text-blue-600 hover:bg-blue-50"
+                        }`}
+                        title={
+                          user.roles?.includes("ROLE_ADMIN")
+                            ? "Cannot modify admin user roles"
+                            : "Assign Roles"
+                        }
                       >
                         <FiUserPlus className="w-4 h-4" />
                       </button>

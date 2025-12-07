@@ -17,16 +17,7 @@ import Pagination from "../../components/Pagination";
 import { getToken } from "../../helpers/helpers";
 import DeleteModel from "../../components/DeleteSessionModel";
 import EditSessionModal from "../../components/Sessions/EditSessionModal";
-import { stat } from "fs";
-const statuses = ["All", "draft", "in-progress", "completed"];
-const visibilities = ["All", "public", "private"];
-const sortOptions = [
-  { value: "updated", label: "Recently Updated" },
-  { value: "created", label: "Recently Created" },
-  { value: "name", label: "Name A-Z" },
-  { value: "views", label: "Most Viewed" },
-  { value: "commits", label: "Most Active" },
-];
+import { statuses, visibilities } from "../../data/data";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -96,8 +87,9 @@ export default function WorkSpace() {
       await axiosInstance.delete(`/sessions/${SessionId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      // Invalidate all session queries to ensure data is refreshed
       queryClient.invalidateQueries({
-        queryKey: [`SessionData-${currentPage}`],
+        queryKey: ["SessionData"],
       });
       setOpenDeleteModal(false);
       toast.success("Session removed successfully", { position: "top-right" });
@@ -125,10 +117,11 @@ export default function WorkSpace() {
   const Systems = System.data?.data.systems;
 
   // Fetch all sessions when filters are active, otherwise use pagination
+  // Using a large size (10000) to ensure we get all sessions when filtering
   const useWorkSpaceSession = useAuthQuery<ISessionsResponse>({
     queryKey: [`SessionData-${hasActiveFilters ? "all" : currentPage}`],
     url: hasActiveFilters
-      ? `/sessions/by-user?size=1000&page=0`
+      ? `/sessions/by-user?size=10000&page=0`
       : `/sessions/by-user?size=${ITEMS_PER_PAGE}&page=${currentPage - 1}`,
     config: {
       headers: {
@@ -144,13 +137,11 @@ export default function WorkSpace() {
   const filteredAndSortedSessions = useMemo(() => {
     let filtered = [...allSessions];
 
-    // Search filter
+    // Search filter - filter by session name only
     if (searchTerm.trim()) {
       const searchLower = searchTerm.toLowerCase().trim();
-      filtered = filtered.filter(
-        (session) =>
-          session.name.toLowerCase().includes(searchLower) ||
-          session.description.toLowerCase().includes(searchLower)
+      filtered = filtered.filter((session) =>
+        session.name.toLowerCase().includes(searchLower)
       );
     }
 
@@ -211,17 +202,37 @@ export default function WorkSpace() {
   const totalFilteredPages = Math.ceil(
     filteredAndSortedSessions.length / ITEMS_PER_PAGE
   );
+
+  // When filters are active, use client-side pagination on filtered results
+  // When no filters, use server-side pagination directly (no client-side pagination needed)
   const paginatedSessions = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    return filteredAndSortedSessions.slice(startIndex, endIndex);
-  }, [filteredAndSortedSessions, currentPage]);
+    if (hasActiveFilters) {
+      // Client-side pagination for filtered results
+      const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+      const endIndex = startIndex + ITEMS_PER_PAGE;
+      return filteredAndSortedSessions.slice(startIndex, endIndex);
+    } else {
+      // No filters: use sessions directly from server (already paginated)
+      return filteredAndSortedSessions;
+    }
+  }, [filteredAndSortedSessions, currentPage, hasActiveFilters]);
 
   const Sessionlength = paginatedSessions.length;
   const SessionData = paginatedSessions;
+
+  // Calculate total pages: use filtered pages when filters are active, otherwise use server pagination
   const totalPages = hasActiveFilters
     ? totalFilteredPages
     : usersession.data?.data.totalPages ?? 0;
+
+  // Ensure currentPage doesn't exceed totalPages and is at least 1
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    } else if (currentPage < 1) {
+      setCurrentPage(1);
+    }
+  }, [totalPages, currentPage]);
   /*-------------------------------------------------------------------------------*/
 
   return (
@@ -263,7 +274,7 @@ export default function WorkSpace() {
               <AiOutlineSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <input
                 type="text"
-                placeholder="Search projects..."
+                placeholder="Search by session name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none transition-all"
@@ -279,22 +290,6 @@ export default function WorkSpace() {
                 <IoFilterOutline className="h-4 w-4" />
                 Filters
               </button>
-
-              {/* Sort */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700">Sort:</span>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none bg-white"
-                >
-                  {sortOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
             </div>
           </div>
 
@@ -343,7 +338,7 @@ export default function WorkSpace() {
                           : "bg-white text-gray-700 border-gray-300 hover:bg-[#42D5AE]/10 hover:border-[#42D5AE]/30"
                       }`}
                     >
-                      {status}
+                      {status.toLowerCase()}
                     </button>
                   ))}
                 </div>
