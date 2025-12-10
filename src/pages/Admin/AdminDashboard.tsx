@@ -15,7 +15,7 @@ export default function AdminDashboard() {
   const handleLogout = () => {
     clearToken();
     clearRole();
-    router("/");
+    router("/auth");
   };
 
   return (

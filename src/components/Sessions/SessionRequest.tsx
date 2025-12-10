@@ -5,20 +5,41 @@ import { useNavigate, useParams } from "react-router-dom";
 import RequestCard from "../Cards/RequestCard";
 import { useAuthQuery } from "../../imports";
 import { getToken } from "../../helpers/helpers";
-import { ApiError, RequestsResponse } from "../../interfaces";
+import { ApiError, RequestsResponse, SessionResponse } from "../../interfaces";
 import axiosInstance from "../../config/axios.config";
 import { AxiosError } from "axios";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { VscDebugStart } from "react-icons/vsc";
+import { useState, useEffect } from "react";
 
 export default function SessionRequest() {
   const router = useNavigate();
   const token = getToken();
   const params = useParams();
   const queryClient = useQueryClient();
+  const [sessionStatus, setSessionStatus] = useState<string>("");
 
   const SessionId = params.id as string;
+
+  // Fetch session data to get initial status
+  const sessionQuery = useAuthQuery<SessionResponse>({
+    queryKey: [`session-${SessionId}`],
+    url: `/sessions/by-id/${SessionId}`,
+    config: {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  });
+
+  // Update session status from fetched data
+  useEffect(() => {
+    const sessionData = sessionQuery.data?.data;
+    if (sessionData?.status) {
+      setSessionStatus(sessionData.status);
+    }
+  }, [sessionQuery.data]);
 
   const handleApprove = async (requestId: string) => {
     try {
@@ -61,12 +82,43 @@ export default function SessionRequest() {
     }
   };
   const handleStartSession = async () => {
-    try {
-      await axiosInstance.put(`/sessions/start/${SessionId}`, null, {
-        headers: { Authorization: `Bearer ${token}` },
+    // Check if session is already running
+    if (sessionStatus === "RUNNING") {
+      toast.error("Session is already running", {
+        position: "top-right",
+        duration: 2000,
       });
+      return;
+    }
+
+    try {
+      const res = await axiosInstance.put(
+        `/sessions/start/${SessionId}`,
+        null,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      console.log(res);
+
+      // Update session status from response
+      // Check different possible response structures
+      const responseData = res.data as any;
+      const responseStatus =
+        responseData?.data?.status ||
+        responseData?.data?.data?.status ||
+        responseData?.status;
+
+      if (responseStatus) {
+        setSessionStatus(responseStatus);
+      } else {
+        // If status not in response, set to RUNNING as default after successful start
+        setSessionStatus("RUNNING");
+      }
+
       toast.success("Session started successfully", { duration: 1000 });
       queryClient.invalidateQueries({ queryKey: [`session-request-${token}`] });
+      queryClient.invalidateQueries({ queryKey: [`session-${SessionId}`] });
     } catch (err) {
       const error = err as AxiosError<ApiError>;
       toast.error(`${error.response?.data.message}`, {
@@ -123,10 +175,13 @@ export default function SessionRequest() {
             <div className="flex items-center gap-3">
               <button
                 onClick={handleStartSession}
-                className="group inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70 transition"
+                disabled={sessionStatus === "RUNNING"}
+                className="group inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
               >
                 <VscDebugStart className="w-4 h-4" />
-                Start Session
+                {sessionStatus === "RUNNING"
+                  ? "Session Running"
+                  : "Start Session"}
               </button>
             </div>
           </div>

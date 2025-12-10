@@ -19,6 +19,7 @@ export default function Navbar() {
     clearToken();
     clearRole();
     setShowUserMenu(false);
+    navigate("/");
   };
 
   const { data: Data } = useAuthQuery<IProfileResponse>({
