@@ -4,7 +4,7 @@ import { CiLock, CiUser } from "react-icons/ci";
 import toast from "react-hot-toast";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { AxiosError } from "axios";
+import axios, { AxiosError } from "axios";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { LoginAxiosResponse } from "../../data/data";
 import { loginSchema, registerSchema } from "../../validation";
@@ -125,7 +125,9 @@ const AuthPage = () => {
     }
   };
   ///////////////////////////////////////////////////////////////////////////////////
-
+  const onSubmitLoginGithub = async () => {
+    await axios.get("http://localhost:8080/login/oauth2/code/github");
+  };
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -508,6 +510,7 @@ const AuthPage = () => {
             {/* Social Login */}
             <div className="grid grid-cols-1 gap-4">
               <motion.button
+                onClick={onSubmitLoginGithub}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="flex items-center justify-center gap-3 py-3 px-4 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl transition-all duration-300 text-gray-700 font-medium"

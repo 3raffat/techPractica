@@ -53,17 +53,6 @@ export default function Explore() {
     }
     return `/sessions/?size=${ITEMS_PER_PAGE}&page=${currentPage - 1}`;
   };
-  if (token === null) {
-    // Fetch paginated sessions from API
-    const useExploreSessionx = useAuthQuery<ISessionsResponse>({
-      queryKey: [
-        `SessionData-${
-          hasSearchFilter ? "all" : currentPage
-        }-${selectedCategory}`,
-      ],
-      url: buildApiUrl(),
-    });
-  }
 
   const useExploreSessionx = useAuthQuery<ISessionsResponse>({
     queryKey: [
