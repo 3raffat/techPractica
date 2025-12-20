@@ -95,7 +95,7 @@ const AuthPage = () => {
         "/auth/login",
         data
       );
-      toast.success(response.data.message, { position: "top-right" });
+      toast.success(response.data.message, { position: "top-center" });
       setToken(response.data.data.token);
       const token = getToken();
       const payload = decodeJwtSafe(token);
@@ -117,7 +117,7 @@ const AuthPage = () => {
     } catch (err) {
       const error = err as AxiosError<ApiError>;
       toast.error(error.response?.data.message || "login invalid", {
-        position: "top-right",
+        position: "top-center",
         duration: 4000,
       });
     } finally {
@@ -506,7 +506,7 @@ const AuthPage = () => {
             </div>
 
             {/* Social Login */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -514,14 +514,6 @@ const AuthPage = () => {
               >
                 <FiGithub className="w-5 h-5" />
                 GitHub
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="flex items-center justify-center gap-3 py-3 px-4 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl transition-all duration-300 text-gray-700 font-medium"
-              >
-                <FiChrome className="w-5 h-5" />
-                Google
               </motion.button>
             </div>
           </div>

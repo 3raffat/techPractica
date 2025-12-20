@@ -7,6 +7,7 @@ import ExploreProjectCard from "../../components/Cards/ExploreSessionCard";
 import Pagination from "../../components/Pagination";
 import { ISession, ISystem, ISessionsResponse } from "../../interfaces";
 import { useAuthQuery } from "../../imports";
+import { getToken } from "../../helpers/helpers";
 
 function useIsDesktop(breakpoint = 1024) {
   const [isDesktop, setIsDesktop] = useState(false);
@@ -37,16 +38,13 @@ export default function Explore() {
   const hasActiveFilters = hasSearchFilter || selectedCategory !== "All";
   const System = useSystems();
   const Systems = System.data?.data.systems ?? [];
-
+  const token = getToken();
   /* ----------------Data-------------------------------------- */
-  // Fetch all sessions when search is active (for client-side filtering)
-  // Otherwise use server-side pagination (with category filter if selected)
+
   const buildApiUrl = () => {
     if (hasSearchFilter) {
-      // When search is active, fetch all sessions for client-side filtering
       return `/sessions/?size=10000&page=0`;
     }
-    // When no search, use server-side pagination
     if (selectedCategory !== "All") {
       var categoryId = Systems.find((sys) => sys.name === selectedCategory)?.id;
       return `/sessions/${categoryId}?size=${ITEMS_PER_PAGE}&page=${
@@ -55,8 +53,18 @@ export default function Explore() {
     }
     return `/sessions/?size=${ITEMS_PER_PAGE}&page=${currentPage - 1}`;
   };
+  if (token === null) {
+    // Fetch paginated sessions from API
+    const useExploreSessionx = useAuthQuery<ISessionsResponse>({
+      queryKey: [
+        `SessionData-${
+          hasSearchFilter ? "all" : currentPage
+        }-${selectedCategory}`,
+      ],
+      url: buildApiUrl(),
+    });
+  }
 
-  // Fetch paginated sessions from API
   const useExploreSessionx = useAuthQuery<ISessionsResponse>({
     queryKey: [
       `SessionData-${
@@ -64,6 +72,13 @@ export default function Explore() {
       }-${selectedCategory}`,
     ],
     url: buildApiUrl(),
+    ...(token && {
+      config: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    }),
   });
 
   const Session = useExploreSessionx;

@@ -271,30 +271,30 @@ export const featuress = [
     color: "text-purple-500",
     bgColor: "bg-purple-50",
   },
-  {
-    icon: FaTrophy,
-    title: "Certifications",
-    description:
-      "Earn recognized certificates to showcase your skills to potential employers.",
-    color: "text-yellow-500",
-    bgColor: "bg-yellow-50",
-  },
-  {
-    icon: FaBolt,
-    title: "Interactive Learning",
-    description:
-      "Engage with interactive coding challenges and real-time feedback systems.",
-    color: "text-orange-500",
-    bgColor: "bg-orange-50",
-  },
-  {
-    icon: FaCode,
-    title: "Industry Tools",
-    description:
-      "Learn using the same tools and technologies used by top tech companies.",
-    color: "text-indigo-500",
-    bgColor: "bg-indigo-50",
-  },
+  // {
+  //   icon: FaTrophy,
+  //   title: "Certifications",
+  //   description:
+  //     "Earn recognized certificates to showcase your skills to potential employers.",
+  //   color: "text-yellow-500",
+  //   bgColor: "bg-yellow-50",
+  // },
+  // {
+  //   icon: FaBolt,
+  //   title: "Interactive Learning",
+  //   description:
+  //     "Engage with interactive coding challenges and real-time feedback systems.",
+  //   color: "text-orange-500",
+  //   bgColor: "bg-orange-50",
+  // },
+  // {
+  //   icon: FaCode,
+  //   title: "Industry Tools",
+  //   description:
+  //     "Learn using the same tools and technologies used by top tech companies.",
+  //   color: "text-indigo-500",
+  //   bgColor: "bg-indigo-50",
+  // },
 ];
 /*-------------------------------------------------------------------------------------------------- */
 export type CategoryType =
