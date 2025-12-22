@@ -18,12 +18,10 @@ import { ErrorMsg } from "../../imports";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import { BsArrowRight } from "react-icons/bs";
 import { MdOutlineEmail } from "react-icons/md";
-import { FiChrome, FiGithub } from "react-icons/fi";
+import { FiGithub } from "react-icons/fi";
 import {
   decodeJwtSafe,
-  getAdminRole,
   getToken,
-  isAdmin,
   setRole,
   setRoleAdmin,
   setToken,
@@ -125,8 +123,14 @@ const AuthPage = () => {
     }
   };
   ///////////////////////////////////////////////////////////////////////////////////
-  const onSubmitLoginGithub = async () => {
-    await axios.get("http://localhost:8080/login/oauth2/code/github");
+  const onSubmitLoginGithub = () => {
+    const baseUrl = "http://localhost:8080";
+
+    if (isLogin) {
+      window.location.href = `${baseUrl}/login/oauth2/code/github`;
+    } else {
+      window.location.href = `${baseUrl}/oauth2/authorization/github`;
+    }
   };
   // Animation variants
   const containerVariants = {
