@@ -26,6 +26,7 @@ import {
   setRoleAdmin,
   setToken,
 } from "../../helpers/helpers";
+import Cookies from "universal-cookie";
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
   const mode = searchParams.get("mode");
@@ -126,11 +127,11 @@ const AuthPage = () => {
   const onSubmitLoginGithub = () => {
     const baseUrl = "http://localhost:8080";
 
-    if (isLogin) {
-      window.location.href = `${baseUrl}/login/oauth2/code/github`;
-    } else {
-      window.location.href = `${baseUrl}/oauth2/authorization/github`;
-    }
+    window.location.href = `${baseUrl}/oauth2/authorization/github`;
+
+    const cookies = new Cookies();
+    const token = cookies.get("access_token");
+    setToken(token);
   };
   // Animation variants
   const containerVariants = {

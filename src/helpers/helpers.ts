@@ -1,3 +1,8 @@
+import Cookies from "universal-cookie";
+
+/////////////////
+const cookies = new Cookies();
+
 export const setToken = (token: string) => {
   sessionStorage.setItem("access_token", token);
 };
@@ -7,6 +12,8 @@ export const getToken = () => {
 };
 
 export const clearToken = () => {
+  cookies.remove("access_token");
+
   sessionStorage.removeItem("access_token");
 };
 

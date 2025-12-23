@@ -46,6 +46,7 @@ const CreateSession = () => {
   });
 
   const token = getToken();
+  console.log("Token in CreateSession:", token);
   /* ------------------ Fetch Data ------------------ */
   const Systems = useSystems().data?.data.systems;
   const Fields = useFields().data?.data;

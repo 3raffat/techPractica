@@ -2215,7 +2215,7 @@ undici-types@~7.13.0:
 
 universal-cookie@^8.0.1:
   version "8.0.1"
-  resolved "https://registry.npmjs.org/universal-cookie/-/universal-cookie-8.0.1.tgz"
+  resolved "https://registry.yarnpkg.com/universal-cookie/-/universal-cookie-8.0.1.tgz#19263fcda6889978a081c610a90fc395eeaeec64"
   integrity sha512-B6ks9FLLnP1UbPPcveOidfvB9pHjP+wekP2uRYB9YDfKVpvcjKgy1W5Zj+cEXJ9KTPnqOKGfVDQBmn8/YCQfRg==
   dependencies:
     cookie "^1.0.2"

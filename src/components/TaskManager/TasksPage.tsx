@@ -43,7 +43,6 @@ export default function TasksPage() {
   const { id } = useParams();
   const token = getToken();
   const queryClient = useQueryClient();
-  console.log("Session member in TasksPage:", id);
 
   // Fetch tasks from API
   useEffect(() => {
