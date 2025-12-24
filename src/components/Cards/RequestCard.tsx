@@ -25,7 +25,11 @@ interface RequestCardProps {
   onApprove: (requestId: string) => void;
   onReject: (requestId: string) => void;
   sessionStatus?: string;
-  onRemoveParticipant?: (participantId: string, participantName: string) => void;
+  onRemoveParticipant?: (
+    participantId: string,
+    participantName: string,
+    requestId: string
+  ) => void;
 }
 
 export default function RequestCard({
@@ -256,9 +260,15 @@ export default function RequestCard({
               Request approved - User added to team
             </span>
           </div>
-          {sessionStatus === "RUNNING" && onRemoveParticipant && (
+          {onRemoveParticipant && (
             <button
-              onClick={() => onRemoveParticipant(request.userId, request.fullName)}
+              onClick={() =>
+                onRemoveParticipant(
+                  request.userId,
+                  request.fullName,
+                  request.requestId
+                )
+              }
               className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg transition-colors"
             >
               <BsTrash2 className="w-4 h-4" />

@@ -43,15 +43,16 @@ export default function SessionRequest() {
 
   const handleApprove = async (requestId: string) => {
     try {
-      const res = await axiosInstance.put(
+      await axiosInstance.put(
         `/sessions/requests/approve/${SessionId}/${requestId}`,
         null,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      toast.success("Request rejected successfully", { duration: 1000 });
+      toast.success("Request approved successfully", { duration: 1000 });
       queryClient.invalidateQueries({ queryKey: [`session-request-${token}`] });
+      queryClient.invalidateQueries({ queryKey: [`session-${SessionId}`] });
     } catch (err) {
       const error = err as AxiosError<ApiError>;
       toast.error(`${error.response?.data.message}`, {
@@ -128,11 +129,13 @@ export default function SessionRequest() {
 
   const handleRemoveParticipant = async (
     participantId: string,
-    participantName: string
+    participantName: string,
+    requestId: string
   ) => {
     try {
       await axiosInstance.delete(
-        `/session/${SessionId}/participants/${participantId}`,
+        `/session/${requestId}/${SessionId}/participants/${participantId}`,
+
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -159,6 +162,7 @@ export default function SessionRequest() {
       },
     },
   }).data?.data;
+  console.log("RecSession", RecSession);
   const getStatusCounts = () => {
     return {
       total: RecSession?.length,

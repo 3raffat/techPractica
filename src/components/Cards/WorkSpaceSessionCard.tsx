@@ -120,17 +120,33 @@ export function WorkSpaceSessionCard({
                       transition={{ duration: 0.2 }}
                       className="absolute right-0 top-full mt-2 w-52 bg-white border-2 border-gray-200 rounded-2xl shadow-2xl z-20 py-2 overflow-hidden"
                     >
-                      {session.status === "RUNNING" && (
-                        <button
-                          onClick={onClick}
-                          className="w-full px-5 py-3 text-left text-sm hover:bg-gradient-to-r hover:from-[#42D5AE]/10 hover:to-transparent flex items-center gap-3 transition-all duration-200 group"
+                      <button
+                        onClick={onClick}
+                        disabled={session.status?.toUpperCase() === "WAITING"}
+                        className={`w-full px-5 py-3 text-left text-sm flex items-center gap-3 transition-all duration-200 group ${
+                          session.status?.toUpperCase() === "WAITING"
+                            ? "opacity-50 cursor-not-allowed text-gray-400"
+                            : "hover:bg-gradient-to-r hover:from-[#42D5AE]/10 hover:to-transparent"
+                        }`}
+                      >
+                        <MdOutlineSpaceDashboard
+                          className={`w-4 h-4 ${
+                            session.status?.toUpperCase() === "WAITING"
+                              ? "text-gray-400"
+                              : "text-gray-600 group-hover:text-[#42D5AE] transition-colors"
+                          }`}
+                        />
+                        <span
+                          className={`font-medium ${
+                            session.status?.toUpperCase() === "WAITING"
+                              ? "text-gray-400"
+                              : "text-gray-700 group-hover:text-[#022639]"
+                          }`}
                         >
-                          <MdOutlineSpaceDashboard className="w-4 h-4 text-gray-600 group-hover:text-[#42D5AE] transition-colors" />
-                          <span className="font-medium text-gray-700 group-hover:text-[#022639]">
-                            Task manager
-                          </span>
-                        </button>
-                      )}
+                          Task manager
+                        </span>
+                      </button>
+
                       {session.role != "PARTICIPATE" && (
                         <>
                           {" "}
