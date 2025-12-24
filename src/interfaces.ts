@@ -456,4 +456,19 @@ export interface ITasksResponse {
   status: number;
   message: string;
 }
+
+export interface INotification {
+  notificationId: string;
+  title: string;
+  content: string;
+}
+
+export interface INotificationsResponse {
+  data: {
+    notifications: INotification[];
+  };
+  status: number;
+  message: string;
+}
+
 /*-------------------------------------------------------------------------------------------------- */

@@ -47,7 +47,6 @@ export function TaskModal({
         sessionId,
         dueDate: isoDate,
       };
-      console.log("Task created:", payload);
 
       const res = await axiosInstance.post("/sessions/tasks/", payload, {
         headers: { Authorization: `Bearer ${token}` },

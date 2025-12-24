@@ -34,7 +34,6 @@ export default function ProjectDetailPage() {
   const fieldName = SessionData?.requirements.map((x) => x.field) ?? [];
   const TechNames =
     SessionData?.requirements.flatMap((x) => x.technologies) ?? [];
-  console.log(SessionData);
   const router = useNavigate();
   /* ------------------ Session Request ------------------ */
   const {
@@ -287,8 +286,8 @@ export default function ProjectDetailPage() {
                   {...register("brief", {
                     required: "Please tell us about yourself",
                     minLength: {
-                      value: 200,
-                      message: "Please provide at least 200 characters",
+                      value: 20,
+                      message: "Please provide at least 20 characters",
                     },
                   })}
                   rows={8}

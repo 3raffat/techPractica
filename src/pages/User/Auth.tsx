@@ -69,7 +69,7 @@ const AuthPage = () => {
       });
     } catch (err) {
       const error = err as AxiosError<ApiError>;
-      toast.error(error.response?.data.message || "login invalid", {
+      toast.error(error.response?.data.message || "register invalid", {
         position: "top-right",
         duration: 2000,
       });
@@ -128,10 +128,6 @@ const AuthPage = () => {
     const baseUrl = "http://localhost:8080";
 
     window.location.href = `${baseUrl}/oauth2/authorization/github`;
-
-    const cookies = new Cookies();
-    const token = cookies.get("access_token");
-    setToken(token);
   };
   // Animation variants
   const containerVariants = {

@@ -4,9 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Desktop from "./Desktop";
 import RightSection from "./RightSection";
 import MobileSidebar from "./MobileSidebar";
-import { clearRole, clearToken, getToken } from "../../helpers/helpers";
-import { useAuthQuery } from "../../imports";
-import { IProfileResponse } from "../../interfaces";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function Navbar() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -14,25 +12,14 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const pathname = useLocation().pathname;
-  const token = getToken();
+  const { logout } = useAuth();
+
   const handleLogout = () => {
-    clearToken();
-    clearRole();
     setShowUserMenu(false);
+    logout();
     navigate("/");
   };
 
-  const { data: Data } = useAuthQuery<IProfileResponse>({
-    queryKey: [`profile-data-${token}`],
-    url: "/profile/",
-    config: {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  });
-  const userInfo = Data?.data?.user;
-  const userName = userInfo?.name;
   const handleClick = () => {
     if (location.pathname === "/" || location.pathname === "/home") {
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -72,9 +59,6 @@ export default function Navbar() {
               handleLogout={handleLogout}
               isSidebarOpen={isSidebarOpen}
               setIsSidebarOpen={setIsSidebarOpen}
-              token={token}
-              userName={userName}
-              userEmail={userInfo?.email}
             />
           </div>
         </div>
@@ -85,7 +69,6 @@ export default function Navbar() {
         isSidebarOpen={isSidebarOpen}
         pathname={pathname}
         setIsSidebarOpen={setIsSidebarOpen}
-        token={token}
       />
       {/* Spacer */}
       <div className="h-20" />

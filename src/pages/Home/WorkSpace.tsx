@@ -93,6 +93,9 @@ export default function WorkSpace() {
       });
       setOpenDeleteModal(false);
       toast.success("Session removed successfully", { position: "top-right" });
+      queryClient.invalidateQueries({
+        queryKey: [`SessionData-${hasActiveFilters ? "all" : currentPage}`],
+      });
     } catch (error) {
       const err = error as AxiosError<IErrorResponse>;
       toast.error(`${err.response?.data.message}`, {
@@ -132,7 +135,6 @@ export default function WorkSpace() {
 
   const usersession = useWorkSpaceSession;
   const allSessions = usersession.data?.data.sessions ?? [];
-  console.log("All Sessions:", allSessions);
   // Filter and sort sessions
   const filteredAndSortedSessions = useMemo(() => {
     let filtered = [...allSessions];
@@ -445,7 +447,7 @@ export default function WorkSpace() {
                   <LuFolderOpen className="h-12 w-12 mx-auto" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No projects found
+                  No Sessions found
                 </h3>
                 <p className="text-gray-600 mb-4">
                   {searchTerm ||
@@ -453,7 +455,7 @@ export default function WorkSpace() {
                   selectedStatus !== "All" ||
                   selectedVisibility !== "All"
                     ? "Try adjusting your search criteria or filters."
-                    : "Create your first project to get started."}
+                    : "Create your first session to get started."}
                 </p>
                 <div className="flex gap-4 justify-center">
                   {(searchTerm ||
@@ -472,7 +474,7 @@ export default function WorkSpace() {
                     className="px-4 py-2 bg-[#42D5AE] text-white rounded-lg hover:bg-[#38b28d] transition-colors flex items-center gap-2"
                   >
                     <HiOutlinePlus className="w-4 h-4" />
-                    Create Project
+                    New Session
                   </Link>
                 </div>
               </motion.div>

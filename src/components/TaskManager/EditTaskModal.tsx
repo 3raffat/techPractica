@@ -82,8 +82,6 @@ export function EditTaskModal({
         tags: formData.tags,
       };
 
-      console.log("Task updated:", payload);
-
       await axiosInstance.put("/sessions/tasks/", payload, {
         headers: { Authorization: `Bearer ${token}` },
       });

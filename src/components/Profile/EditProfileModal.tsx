@@ -95,6 +95,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdated }: IProps) => {
         headers: { Authorization: `Bearer ${token}` },
       });
       onUpdated?.();
+      onClose();
       toast.success("Profile updated successfully", { duration: 1000 });
       Navigate("/profile");
     } catch (error) {

@@ -24,7 +24,7 @@ import {
 import { useFields, useSystems, useTechnologies } from "../../api";
 import axiosInstance from "../../config/axios.config";
 import toast from "react-hot-toast";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import { motion } from "framer-motion";
@@ -39,6 +39,7 @@ const CreateSession = () => {
   const Navigate = useNavigate();
   /* ------------------ Form & State ------------------ */
   const queryClient = useQueryClient();
+  const [isLoading, setIsLoading] = useState(false);
   type CrateSession = InferType<typeof SessionSchema>;
 
   const methods = useForm<CrateSession>({
@@ -46,7 +47,6 @@ const CreateSession = () => {
   });
 
   const token = getToken();
-  console.log("Token in CreateSession:", token);
   /* ------------------ Fetch Data ------------------ */
   const Systems = useSystems().data?.data.systems;
   const Fields = useFields().data?.data;
@@ -90,6 +90,7 @@ const CreateSession = () => {
 
   /*-------------------------------------------------------------------------------*/
   const onSubmit: SubmitHandler<CrateSession> = async (data) => {
+    setIsLoading(true);
     const { name, description, system, isPrivate } = data;
     const requirements = data.field.map((fieldId) => {
       const techForField = Technology.filter(
@@ -130,17 +131,29 @@ const CreateSession = () => {
       }, 500);
     } catch (err) {
       const error = err as AxiosError<ApiError>;
-      console.log(error.response?.data.message);
       toast.error(`${error.response?.data.message}`, {
         position: "top-right",
         duration: 2000,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
   return (
     <>
       {isSuccess ? (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 relative">
+          {/* Full Screen Loading Overlay */}
+          {isLoading && (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#42D5AE]"></div>
+                <span className="ml-3 text-white text-lg font-medium">
+                  Creating session...
+                </span>
+              </div>
+            </div>
+          )}
           <section className="relative bg-gradient-to-br from-[#42D5AE] via-[#38b28d] to-[#022639] py-24 overflow-hidden">
             {/* Decorative elements */}
             <div className="absolute inset-0 opacity-20">
@@ -428,7 +441,8 @@ const CreateSession = () => {
                         <div className="mt-10 pt-10 border-t border-gray-100">
                           <button
                             type="submit"
-                            className="w-full px-8 py-5 bg-gradient-to-r from-[#42D5AE] to-[#38b28d] hover:from-[#38b28d] hover:to-[#42D5AE] text-white rounded-2xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-3 shadow-xl shadow-[#42D5AE]/20 hover:shadow-2xl hover:shadow-[#42D5AE]/30 hover:scale-[1.02] active:scale-[0.98]"
+                            disabled={isLoading}
+                            className="w-full px-8 py-5 bg-gradient-to-r from-[#42D5AE] to-[#38b28d] hover:from-[#38b28d] hover:to-[#42D5AE] text-white rounded-2xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-3 shadow-xl shadow-[#42D5AE]/20 hover:shadow-2xl hover:shadow-[#42D5AE]/30 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
                           >
                             <IoSaveOutline className="w-6 h-6" />
                             Create Project

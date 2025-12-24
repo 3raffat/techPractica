@@ -161,7 +161,6 @@ export function ModernUserManagement() {
   };
 
   const openAssignRoleModal = (user: User) => {
-    console.log(user);
     if (!user || !user.id || user.id.trim() === "") {
       toast.error("Invalid user data. Cannot assign roles.", {
         position: "top-right",
@@ -235,7 +234,7 @@ export function ModernUserManagement() {
                 Status
               </th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Projects
+                Sessions
               </th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 Actions

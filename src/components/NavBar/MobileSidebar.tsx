@@ -3,21 +3,22 @@ import { Link } from "react-router-dom";
 import { NavLinks } from "../../Router/route";
 import { MdLogout } from "react-icons/md";
 import { GoX } from "react-icons/go";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface IProps {
   isSidebarOpen: boolean;
   setIsSidebarOpen: (isSidebarOpen: boolean) => void;
   handleLogout: () => void;
   pathname: string;
-  token: string | null;
 }
 const MobileSidebar = ({
   handleLogout,
   isSidebarOpen,
   pathname,
   setIsSidebarOpen,
-  token,
 }: IProps) => {
+  const { isTokenValid } = useAuth();
+
   return (
     <>
       {" "}
@@ -64,7 +65,7 @@ const MobileSidebar = ({
               <div className="flex-1 overflow-y-auto py-6">
                 <div className="space-y-2 px-6">
                   {NavLinks.filter(
-                    (x) => x.label !== "Workspace" || !!token
+                    (x) => x.label !== "Workspace" || isTokenValid
                   ).map(({ label, path, icon: Icon }, index) => {
                     const isActive = pathname === path;
                     return (
@@ -83,7 +84,11 @@ const MobileSidebar = ({
                           }`}
                           onClick={() => setIsSidebarOpen(false)}
                         >
-                          <Icon className={`w-5 h-5 ${isActive ? "text-[#42D5AE]" : ""}`} />
+                          <Icon
+                            className={`w-5 h-5 ${
+                              isActive ? "text-[#42D5AE]" : ""
+                            }`}
+                          />
                           {label}
                         </Link>
                       </motion.div>
@@ -92,7 +97,7 @@ const MobileSidebar = ({
                 </div>
 
                 {/* Auth / Logout */}
-                {!token && (
+                {!isTokenValid && (
                   <div className="mt-8 px-6 space-y-3">
                     <Link
                       to="/auth?mode=login"
@@ -111,7 +116,7 @@ const MobileSidebar = ({
                   </div>
                 )}
 
-                {token && (
+                {isTokenValid && (
                   <div className="mt-8 px-6">
                     <button
                       onClick={() => {

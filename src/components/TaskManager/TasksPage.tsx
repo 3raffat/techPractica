@@ -70,7 +70,6 @@ export default function TasksPage() {
         const fetchedTasks =
           response.data?.data?.tasks || response.data?.tasks || [];
         setTasks(fetchedTasks);
-        console.log("Fetched tasks:", fetchedTasks);
       } catch (err: any) {
         console.error("Error fetching tasks:", err);
         setError(err.response?.data?.message || "Failed to fetch tasks");

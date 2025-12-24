@@ -50,7 +50,6 @@ export default function SessionRequest() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      console.log(res);
       toast.success("Request rejected successfully", { duration: 1000 });
       queryClient.invalidateQueries({ queryKey: [`session-request-${token}`] });
     } catch (err) {
@@ -99,7 +98,6 @@ export default function SessionRequest() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      console.log(res);
 
       // Update session status from response
       // Check different possible response structures
@@ -127,6 +125,31 @@ export default function SessionRequest() {
       });
     }
   };
+
+  const handleRemoveParticipant = async (
+    participantId: string,
+    participantName: string
+  ) => {
+    try {
+      await axiosInstance.delete(
+        `/session/${SessionId}/participants/${participantId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      queryClient.invalidateQueries({ queryKey: [`session-request-${token}`] });
+      queryClient.invalidateQueries({ queryKey: [`session-${SessionId}`] });
+      toast.success(`${participantName} removed from session successfully`, {
+        duration: 1000,
+      });
+    } catch (err) {
+      const error = err as AxiosError<ApiError>;
+      toast.error(`${error.response?.data.message}`, {
+        position: "top-right",
+        duration: 2000,
+      });
+    }
+  };
   const RecSession = useAuthQuery<RequestsResponse>({
     queryKey: [`session-request-${token}`],
     url: `/sessions/requests/${SessionId}/`,
@@ -146,6 +169,7 @@ export default function SessionRequest() {
   };
 
   const statusCounts = getStatusCounts();
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -247,15 +271,19 @@ export default function SessionRequest() {
             </div>
           </div>
         </div>
-        {RecSession?.map((request) => (
-          <RequestCard
-            key={request.requestId}
-            request={request}
-            SessionId={SessionId}
-            onApprove={handleApprove}
-            onReject={handleReject}
-          />
-        ))}
+        <div className="space-y-4">
+          {RecSession?.map((request) => (
+            <RequestCard
+              key={request.requestId}
+              request={request}
+              SessionId={SessionId}
+              onApprove={handleApprove}
+              onReject={handleReject}
+              sessionStatus={sessionStatus}
+              onRemoveParticipant={handleRemoveParticipant}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

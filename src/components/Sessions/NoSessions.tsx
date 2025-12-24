@@ -20,7 +20,7 @@ const NoSessions = () => {
             </h3>
             <p className="text-gray-600 mb-6 max-w-md">
               You haven't joined or created any sessions yet. Start exploring
-              available projects or create your own to get started!
+              available Sessions or create your own to get started!
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">

@@ -120,7 +120,6 @@ export function AssignRoleModal({
         id: validUserId,
         roleIds: finalRoleIds,
       };
-      console.log(payload);
       await axiosInstance.put(`/roles/assign`, payload, {
         headers: {
           Authorization: `Bearer ${token}`,

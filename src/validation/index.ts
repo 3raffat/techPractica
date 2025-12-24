@@ -62,13 +62,13 @@ export const SessionSchema = yup.object({
   name: yup
     .string()
     .required("Name is required")
-    .min(5, "Name must be at least 5 characters")
+    .min(1, "Name must be at least 1 character")
     .max(30, "Name must be at most 30 characters"),
 
   description: yup
     .string()
     .required("Description is required")
-    .min(500, "Description must be at least 500 characters")
+    .min(20, "Description must be at least 20 characters")
     .max(1000, "Description must be at most 1000 characters"),
 
   isPrivate: yup.boolean().required("isPrivate is required"),
@@ -96,7 +96,7 @@ export const userProfileSchema = yup.object({
     .required("First Name is required"),
   lastName: yup
     .string()
-    .min(5, "last Name must be at least 5 characters")
+    .min(3, "last Name must be at least 3 characters")
     .max(15, "last Name must be at most 15 characters")
     .required("Last Name is required"),
   brief: yup.string().required("Brief is required"),

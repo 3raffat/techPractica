@@ -5,6 +5,8 @@ const cookies = new Cookies();
 
 export const setToken = (token: string) => {
   sessionStorage.setItem("access_token", token);
+  // Dispatch custom event to notify AuthContext
+  window.dispatchEvent(new Event("tokenUpdated"));
 };
 
 export const getToken = () => {

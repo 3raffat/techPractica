@@ -1,19 +1,19 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { NavLinks } from "../../Router/route";
-import { getToken } from "../../helpers/helpers";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface IProps {
   pathname: string;
 }
 const Desktop = ({ pathname }: IProps) => {
-  const token = getToken();
+  const { isTokenValid } = useAuth();
 
   return (
     <>
       <div className="hidden md:flex items-center gap-2">
         {NavLinks.slice(0, 4)
-          .filter((x) => x.label !== "Workspace" || !!token)
+          .filter((x) => x.label !== "Workspace" || isTokenValid)
           .map(({ label, path, icon: Icon }) => {
             const isActive = pathname === path;
             return (
