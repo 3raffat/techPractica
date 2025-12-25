@@ -4,14 +4,15 @@ import { BsBriefcase, BsEye } from "react-icons/bs";
 import { CiGlobe } from "react-icons/ci";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { IoLockClosedOutline } from "react-icons/io5";
-import { IRequirement, ISession } from "../../interfaces";
+import { IRequirement, ISessionResponseProfile } from "../../interfaces";
 import { getFieldIcon } from "../../data/data";
 import { LuUser } from "react-icons/lu";
 interface IProps {
-  session: ISession;
+  session: ISessionResponseProfile;
   index: number;
+  userFullName: string;
 }
-const ProfileSessionCard = ({ session, index }: IProps) => {
+const ProfileSessionCard = ({ session, index, userFullName }: IProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -35,17 +36,10 @@ const ProfileSessionCard = ({ session, index }: IProps) => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {session.private ? (
-            <div className="px-3 py-1.5 bg-orange-50 text-orange-600 border-2 border-orange-200 rounded-full text-xs font-semibold shadow-sm">
-              <IoLockClosedOutline className="w-4 h-4 inline mr-1" />
-              Private
-            </div>
-          ) : (
-            <div className="px-3 py-1.5 bg-green-50 text-green-600 border-2 border-green-200 rounded-full text-xs font-semibold shadow-sm">
-              <CiGlobe className="w-4 h-4 inline mr-1" />
-              Public
-            </div>
-          )}
+          <div className="px-3 py-1.5 bg-green-50 text-green-600 border-2 border-green-200 rounded-full text-xs font-semibold shadow-sm">
+            <LuUser className="w-4 h-4 inline mr-1" />
+            {userFullName === session.ownerFullName ? "Owner" : "Participate"}
+          </div>
         </div>
       </div>
 

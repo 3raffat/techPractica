@@ -35,7 +35,7 @@ export default function SessionGrid() {
                 </span>
               </h2>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Discover hands-on projects created by our community of learners
+                Discover hands-on sessions created by our community of learners
                 and experts
               </p>
             </motion.div>

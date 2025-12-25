@@ -5,7 +5,7 @@ import ProfileSessionCard from "../../components/Profile/ProfileSessionCard";
 import { LuFolderCode } from "react-icons/lu";
 import ProfileHeader from "../../components/Profile/ProfileHeader";
 import { useAuthQuery } from "../../imports";
-import { IProfileResponse, ISession } from "../../interfaces";
+import { IProfileResponse, ISessionResponseProfile } from "../../interfaces";
 import CompleteProfileCard from "../../components/Profile/CompletePofileCard";
 import NoSessions from "../../components/Sessions/NoSessions";
 import { getToken } from "../../helpers/helpers";
@@ -30,6 +30,11 @@ const ProfilePage = () => {
   });
   const userInfo = Data?.data?.user;
   const session = Data?.data?.sessions!;
+  const fullName = [userInfo?.firstName, userInfo?.lastName]
+    .filter(Boolean)
+    .join(" ");
+
+  console.log(fullName);
   return (
     <>
       {isSuccess ? (
@@ -89,13 +94,16 @@ const ProfilePage = () => {
                     <>
                       {session?.sessions
                         .slice(0, 3)
-                        .map((session: ISession, index: number) => (
-                          <ProfileSessionCard
-                            key={session.id}
-                            session={session}
-                            index={index}
-                          />
-                        ))}
+                        .map(
+                          (session: ISessionResponseProfile, index: number) => (
+                            <ProfileSessionCard
+                              key={session.id}
+                              session={session}
+                              index={index}
+                              userFullName={fullName}
+                            />
+                          )
+                        )}
                     </>
                   )}
                 </div>

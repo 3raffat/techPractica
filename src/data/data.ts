@@ -42,7 +42,7 @@ export const features: Feature[] = [
   {
     title: "Skill Evaluation",
     description:
-      "Assess technical and soft skills effectively through tailored projects and tasks.",
+      "Assess technical and soft skills effectively through tailored sessions and tasks.",
     Icon: FaTools,
     style: "text-yellow-500 w-6 h-6",
   },

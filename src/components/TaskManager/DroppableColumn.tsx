@@ -13,6 +13,7 @@ export function DroppableColumn({
   onView,
   onDelete,
   sessionMember,
+  isSessionEnded,
 }: any) {
   const { setNodeRef, isOver } = useDroppable({
     id: column.id,
@@ -52,6 +53,7 @@ export function DroppableColumn({
               onView={onView}
               onDelete={onDelete}
               sessionMember={sessionMember}
+              isSessionEnded={isSessionEnded}
             />
           ))}
           {tasks.length === 0 && (

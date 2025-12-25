@@ -135,6 +135,7 @@ export default function WorkSpace() {
 
   const usersession = useWorkSpaceSession;
   const allSessions = usersession.data?.data.sessions ?? [];
+  console.log("All Sessions:", allSessions);
   // Filter and sort sessions
   const filteredAndSortedSessions = useMemo(() => {
     let filtered = [...allSessions];
@@ -423,7 +424,7 @@ export default function WorkSpace() {
                     <LuFolderOpen className="h-12 w-12 mx-auto" />
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No more projects on this page
+                    No more sessions on this page
                   </h3>
                   <p className="text-gray-600 mb-4">
                     Try going to the previous page or adjusting your filters.

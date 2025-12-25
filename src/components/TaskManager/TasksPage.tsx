@@ -14,9 +14,14 @@ import {
 import { BsPlus, BsSearch, BsTrash2, BsX, BsCalendar } from "react-icons/bs";
 import { TaskModal } from "./TaskModal";
 import { EditTaskModal } from "./EditTaskModal";
-import { FiEdit3 } from "react-icons/fi";
+import { FiEdit3, FiStopCircle } from "react-icons/fi";
+import toast from "react-hot-toast";
 import { columns, taskTypes, getInitials } from "../../data/data";
-import { IUserSession, SessionResponse } from "../../interfaces";
+import {
+  IUserSession,
+  SessionResponse,
+  IProfileResponse,
+} from "../../interfaces";
 import { DroppableColumn } from "./DroppableColumn";
 import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
@@ -36,6 +41,8 @@ export default function TasksPage() {
   const [deletingTask, setDeletingTask] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showEndSessionModal, setShowEndSessionModal] = useState(false);
+  const [isEndingSession, setIsEndingSession] = useState(false);
   const Navigate = useNavigate();
   const { id } = useParams();
   const token = getToken();
@@ -44,8 +51,31 @@ export default function TasksPage() {
     url: `/sessions/by-id/${id}`,
   });
 
+  // Fetch current user profile to check ownership
+  const { data: userProfile } = useAuthQuery<IProfileResponse>({
+    queryKey: [`profile-data-${token}`],
+    url: "/profile/",
+    config: {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  });
+
   // Extract data from API response
   const sessionData = UserSession.data?.data;
+
+  // Get current user's full name
+  const userInfo = userProfile?.data?.user;
+  const currentUserFullName = userInfo
+    ? [userInfo.firstName, userInfo.lastName].filter(Boolean).join(" ")
+    : "";
+
+  // Check if current user is the session owner
+  const isOwner = sessionData?.ownerFullName === currentUserFullName;
+
+  // Check if session has ended
+  const isSessionEnded = sessionData?.status === "ENDED";
   const field = sessionData?.requirements?.map((req) => req.field) || [];
 
   // Extract session members/users from API response
@@ -172,20 +202,37 @@ export default function TasksPage() {
     return acc;
   }, {} as Record<string, any[]>);
 
+  // Conditionally create sensors - disable drag if session has ended
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: isSessionEnded ? 999999 : 8, // Effectively disable by requiring huge distance
       },
     })
   );
 
   const handleCreateTask = () => {
+    // Prevent creating tasks if session has ended
+    if (isSessionEnded) {
+      toast.error("Cannot create tasks. This session has ended.", {
+        position: "top-right",
+        duration: 2000,
+      });
+      return;
+    }
     setEditingTask(null);
     setIsCreateModalOpen(true);
   };
 
   const handleEditTask = (task: any) => {
+    // Prevent editing tasks if session has ended
+    if (isSessionEnded) {
+      toast.error("Cannot edit tasks. This session has ended.", {
+        position: "top-right",
+        duration: 2000,
+      });
+      return;
+    }
     setEditingTask(task);
     setIsEditModalOpen(true);
   };
@@ -246,6 +293,15 @@ export default function TasksPage() {
   };
 
   const handleDeleteTask = async (taskOrId: any) => {
+    // Prevent deleting tasks if session has ended
+    if (isSessionEnded) {
+      toast.error("Cannot delete tasks. This session has ended.", {
+        position: "top-right",
+        duration: 2000,
+      });
+      return;
+    }
+
     if (!id) {
       console.error("Session ID is missing");
       return;
@@ -308,10 +364,20 @@ export default function TasksPage() {
   };
 
   const handleDragStart = (event: DragStartEvent) => {
+    // Prevent dragging if session has ended
+    if (isSessionEnded) {
+      return;
+    }
     setActiveId(event.active.id);
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
+    // Prevent drag and drop if session has ended
+    if (isSessionEnded) {
+      setActiveId(null);
+      return;
+    }
+
     const { active, over } = event;
     setActiveId(null);
 
@@ -417,6 +483,44 @@ export default function TasksPage() {
     setSelectedType(null);
   };
 
+  const handleEndSession = async () => {
+    if (!id) {
+      toast.error("Session ID is missing");
+      return;
+    }
+
+    try {
+      setIsEndingSession(true);
+      await axios.put(
+        `http://localhost:8080/api/v1/sessions/${id}/finish`,
+        null,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      toast.success("Session ended successfully", {
+        position: "top-right",
+        duration: 2000,
+      });
+      setShowEndSessionModal(false);
+      // Navigate back to workspace after ending session
+      setTimeout(() => {
+        Navigate("/workspace");
+      }, 1000);
+    } catch (err: any) {
+      console.error("Error ending session:", err);
+      toast.error(err.response?.data?.message || "Failed to end session", {
+        position: "top-right",
+        duration: 2000,
+      });
+    } finally {
+      setIsEndingSession(false);
+    }
+  };
+
   // const activeTask = activeId
   //   ? tasks.find((task) => task.id === activeId)
   //   : null;
@@ -442,21 +546,36 @@ export default function TasksPage() {
                   Task Management
                 </h1>
                 <p className="text-gray-600 mt-1">
-                  Drag and drop tasks between columns to update their status
+                  {isSessionEnded
+                    ? "This session has ended. Tasks are read-only."
+                    : "Drag and drop tasks between columns to update their status"}
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-4">
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={!isSessionEnded ? { scale: 1.05 } : {}}
+                whileTap={!isSessionEnded ? { scale: 0.95 } : {}}
                 onClick={handleCreateTask}
-                className="bg-gradient-to-r from-[#42D5AE] to-[#38b28d] hover:from-[#38b28d] hover:to-[#42D5AE] text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 shadow-lg"
+                disabled={isSessionEnded}
+                className="bg-gradient-to-r from-[#42D5AE] to-[#38b28d] hover:from-[#38b28d] hover:to-[#42D5AE] text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 <BsPlus className="w-4 h-4" />
                 Create Task
               </motion.button>
+              {isOwner && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowEndSessionModal(true)}
+                  disabled={sessionData?.status !== "RUNNING"}
+                  className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-600 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                  <FiStopCircle className="w-4 h-4" />
+                  End Session
+                </motion.button>
+              )}
             </div>
           </div>
         </div>
@@ -571,6 +690,7 @@ export default function TasksPage() {
                   onView={handleViewTask}
                   onDelete={handleDeleteTask}
                   sessionMember={sessionMember}
+                  isSessionEnded={isSessionEnded}
                 />
               ))}
             </div>
@@ -776,8 +896,13 @@ export default function TasksPage() {
                         handleEditTask(viewingTask);
                         setViewingTask(null);
                       }}
-                      className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                      title="Edit task"
+                      disabled={isSessionEnded}
+                      className="p-2 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                      title={
+                        isSessionEnded
+                          ? "Cannot edit. Session has ended."
+                          : "Edit task"
+                      }
                     >
                       <FiEdit3 className="w-5 h-5 text-gray-600" />
                     </button>
@@ -1005,6 +1130,59 @@ export default function TasksPage() {
                         })()}
                       </div>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* End Session Confirmation Modal */}
+      <AnimatePresence>
+        {showEndSessionModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={() => setShowEndSessionModal(false)}
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl p-6"
+            >
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                  <FiStopCircle className="w-6 h-6 text-red-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    End Session
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Are you sure you want to end this session? This action will
+                    mark the session as completed and cannot be undone.
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleEndSession}
+                      disabled={isEndingSession}
+                      className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isEndingSession ? "Ending..." : "End Session"}
+                    </button>
+                    <button
+                      onClick={() => setShowEndSessionModal(false)}
+                      disabled={isEndingSession}
+                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Cancel
+                    </button>
                   </div>
                 </div>
               </div>

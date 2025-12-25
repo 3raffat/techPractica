@@ -54,6 +54,16 @@ export interface ISessionsData {
   totalPages: number;
   pageSize: number;
 }
+export interface ISessionResponseProfile {
+  id: string;
+  name: string;
+  description: string;
+  status: string;
+  system: ISystem;
+  requirements: IRequirement[];
+  ownerFullName: string;
+  private: boolean;
+}
 
 export interface ISession {
   id: string;

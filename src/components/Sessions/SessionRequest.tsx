@@ -13,6 +13,7 @@ import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { VscDebugStart, VscTasklist } from "react-icons/vsc";
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function SessionRequest() {
   const router = useNavigate();
@@ -20,6 +21,10 @@ export default function SessionRequest() {
   const params = useParams();
   const queryClient = useQueryClient();
   const [sessionStatus, setSessionStatus] = useState<string>("");
+  const [rejectingRequest, setRejectingRequest] = useState<{
+    requestId: string;
+    userName: string;
+  } | null>(null);
 
   const SessionId = params.id as string;
 
@@ -63,10 +68,16 @@ export default function SessionRequest() {
     }
   };
 
-  const handleReject = async (requestId: string) => {
+  const handleRejectClick = (requestId: string, userName: string) => {
+    setRejectingRequest({ requestId, userName });
+  };
+
+  const handleReject = async () => {
+    if (!rejectingRequest) return;
+
     try {
       await axiosInstance.put(
-        `/sessions/requests/reject/${SessionId}/${requestId}`,
+        `/sessions/requests/reject/${SessionId}/${rejectingRequest.requestId}`,
         null,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -74,6 +85,7 @@ export default function SessionRequest() {
       );
       toast.success("Request rejected successfully", { duration: 1000 });
       queryClient.invalidateQueries({ queryKey: [`session-request-${token}`] });
+      setRejectingRequest(null);
     } catch (err) {
       const error = err as AxiosError<ApiError>;
       toast.error(`${error.response?.data.message}`, {
@@ -308,13 +320,67 @@ export default function SessionRequest() {
               request={request}
               SessionId={SessionId}
               onApprove={handleApprove}
-              onReject={handleReject}
+              onReject={(requestId) =>
+                handleRejectClick(requestId, request.fullName)
+              }
               sessionStatus={sessionStatus}
               onRemoveParticipant={handleRemoveParticipant}
             />
           ))}
         </div>
       </div>
+
+      {/* Reject Confirmation Modal */}
+      <AnimatePresence>
+        {rejectingRequest && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={() => setRejectingRequest(null)}
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl p-6"
+            >
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                  <FiXCircle className="w-6 h-6 text-red-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Reject Request
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Are you sure you want to reject the request from{" "}
+                    <strong>{rejectingRequest.userName}</strong>? This action
+                    cannot be undone.
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleReject}
+                      className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                    >
+                      Reject Request
+                    </button>
+                    <button
+                      onClick={() => setRejectingRequest(null)}
+                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

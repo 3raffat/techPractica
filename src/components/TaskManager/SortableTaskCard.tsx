@@ -10,6 +10,7 @@ export function SortableTaskCard({
   onView,
   onDelete,
   sessionMember,
+  isSessionEnded,
 }: any) {
   const { attributes, listeners, setNodeRef, isDragging } = useSortable({
     id: task.id,
@@ -85,8 +86,9 @@ export function SortableTaskCard({
               e.stopPropagation();
               onEdit(task);
             }}
-            className="p-1 rounded hover:bg-gray-100 transition-colors"
-            title="Edit task"
+            disabled={isSessionEnded}
+            className="p-1 rounded hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+            title={isSessionEnded ? "Cannot edit. Session has ended." : "Edit task"}
           >
             <FiMoreHorizontal className="w-4 h-4 text-gray-400" />
           </button>
@@ -95,8 +97,9 @@ export function SortableTaskCard({
               e.stopPropagation();
               onDelete(task); // Call onDelete with the task object
             }}
-            className="p-1 rounded hover:bg-red-50 transition-colors"
-            title="Delete task"
+            disabled={isSessionEnded}
+            className="p-1 rounded hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+            title={isSessionEnded ? "Cannot delete. Session has ended." : "Delete task"}
           >
             <BsTrash2 className="w-4 h-4 text-red-500" />
           </button>
