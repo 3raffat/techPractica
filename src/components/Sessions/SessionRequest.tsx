@@ -1,6 +1,7 @@
 import { FaArrowLeft } from "react-icons/fa";
 import { FiCheckCircle, FiUsers, FiXCircle } from "react-icons/fi";
 import { LuClock4 } from "react-icons/lu";
+import { BsTrash2 } from "react-icons/bs";
 import { useNavigate, useParams } from "react-router-dom";
 import RequestCard from "../Cards/RequestCard";
 import { useAuthQuery } from "../../imports";
@@ -167,8 +168,9 @@ export default function SessionRequest() {
     return {
       total: RecSession?.length,
       pending: RecSession?.filter((r) => r.state === "PENDING").length,
-      approved: RecSession?.filter((r) => r.state === "APPROVE").length,
+      approved: RecSession?.filter((r) => r.state === "APPROVED").length,
       rejected: RecSession?.filter((r) => r.state === "REJECTED").length,
+      deleted: RecSession?.filter((r) => r.state === "DELETED").length,
     };
   };
 
@@ -218,7 +220,7 @@ export default function SessionRequest() {
 
       {/* Stats */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
           <div className="bg-white rounded-2xl p-6 border border-gray-200">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
@@ -271,6 +273,20 @@ export default function SessionRequest() {
                   {statusCounts.rejected}
                 </p>
                 <p className="text-sm text-gray-600">Rejected</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 border border-gray-200">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gray-200 rounded-xl flex items-center justify-center">
+                <BsTrash2 className="w-6 h-6 text-gray-700" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900">
+                  {statusCounts.deleted}
+                </p>
+                <p className="text-sm text-gray-600">Deleted</p>
               </div>
             </div>
           </div>

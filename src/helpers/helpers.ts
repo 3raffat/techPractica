@@ -5,6 +5,8 @@ const cookies = new Cookies();
 
 export const setToken = (token: string) => {
   sessionStorage.setItem("access_token", token);
+  cookies.remove("access_token");
+
   // Dispatch custom event to notify AuthContext
   window.dispatchEvent(new Event("tokenUpdated"));
 };
@@ -15,7 +17,6 @@ export const getToken = () => {
 
 export const clearToken = () => {
   cookies.remove("access_token");
-
   sessionStorage.removeItem("access_token");
 };
 

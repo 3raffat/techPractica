@@ -252,7 +252,7 @@ export default function RequestCard({
         </div>
       )}
 
-      {request.state === "APPROVE" && (
+      {request.state === "APPROVED" && (
         <div className="flex items-center justify-between pt-6 border-t border-gray-200 mt-6">
           <div className="flex items-center gap-2 text-green-700">
             <BsCheck className="w-5 h-5" />
@@ -270,6 +270,24 @@ export default function RequestCard({
                 )
               }
               className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg transition-colors"
+            >
+              <BsTrash2 className="w-4 h-4" />
+              Remove
+            </button>
+          )}
+        </div>
+      )}
+
+      {request.state === "DELETED" && (
+        <div className="flex items-center justify-between pt-6 border-t border-gray-200 mt-6">
+          <div className="flex items-center gap-2 text-green-700">
+            <BsCheck className="w-5 h-5" />
+            <span className="font-medium">User deleted</span>
+          </div>
+          {onRemoveParticipant && (
+            <button
+              disabled
+              className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg transition-colors opacity-50 cursor-not-allowed"
             >
               <BsTrash2 className="w-4 h-4" />
               Remove
