@@ -11,7 +11,7 @@ import axiosInstance from "../../config/axios.config";
 import { AxiosError } from "axios";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { VscDebugStart } from "react-icons/vsc";
+import { VscDebugStart, VscTasklist } from "react-icons/vsc";
 import { useState, useEffect } from "react";
 
 export default function SessionRequest() {
@@ -203,6 +203,16 @@ export default function SessionRequest() {
             </div>
 
             <div className="flex items-center gap-3">
+              <button
+                onClick={() =>
+                  router(`/workspace/session/${SessionId}/task-manager`)
+                }
+                disabled={sessionStatus !== "RUNNING"}
+                className="group inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+              >
+                <VscTasklist className="w-4 h-4" />
+                Task Manager
+              </button>
               <button
                 onClick={handleStartSession}
                 disabled={sessionStatus === "RUNNING"}

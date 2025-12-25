@@ -405,8 +405,7 @@ export default function WorkSpace() {
                         onDelete={() => openDeleteModal(session.id)}
                         onClick={() =>
                           router(
-                            `/workspace/session/${session.id}/task-manager`,
-                            { state: { session: session } }
+                            `/workspace/session/${session.id}/task-manager`
                           )
                         }
                         onEdit={openEditModal}

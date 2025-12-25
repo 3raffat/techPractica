@@ -16,12 +16,12 @@ import { TaskModal } from "./TaskModal";
 import { EditTaskModal } from "./EditTaskModal";
 import { FiEdit3 } from "react-icons/fi";
 import { columns, taskTypes, getInitials } from "../../data/data";
-import { IUserSession } from "../../interfaces";
+import { IUserSession, SessionResponse } from "../../interfaces";
 import { DroppableColumn } from "./DroppableColumn";
 import { FaArrowLeft } from "react-icons/fa";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getToken } from "../../helpers/helpers";
-import { useQueryClient } from "@tanstack/react-query";
+import { useAuthQuery } from "../../imports";
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState<any[]>([]);
@@ -37,12 +37,46 @@ export default function TasksPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const Navigate = useNavigate();
-  const { session } = useLocation().state || {};
-  const sessionMember = session?.users;
-  const field = session?.requirements.map((req: any) => req.field);
   const { id } = useParams();
   const token = getToken();
-  const queryClient = useQueryClient();
+  const UserSession = useAuthQuery<SessionResponse>({
+    queryKey: [`UserSession`],
+    url: `/sessions/by-id/${id}`,
+  });
+
+  // Extract data from API response
+  const sessionData = UserSession.data?.data;
+  const field = sessionData?.requirements?.map((req) => req.field) || [];
+
+  // Extract session members/users from API response
+  // SessionResponse interface may not include members, but the API might return them
+  const rawMembers =
+    (sessionData as any)?.users || (sessionData as any)?.members || [];
+
+  // Transform members to IUserSession format if needed
+  const sessionMember: IUserSession[] = rawMembers.map((member: any) => {
+    // Helper function to get full name from firstName and lastName
+    const getFullName = (obj: any): string => {
+      if (obj.firstName || obj.lastName) {
+        return `${obj.firstName || ""} ${obj.lastName || ""}`.trim();
+      }
+      return obj.fullName || obj.name || "Unknown User";
+    };
+
+    // If it's a Member object (has user property)
+    if (member.user) {
+      const user = member.user;
+      return {
+        id: user.id || member.id,
+        fullName: getFullName(user),
+      };
+    }
+    // If it's already in IUserSession format or direct user object
+    return {
+      id: member.id || "",
+      fullName: getFullName(member),
+    };
+  });
 
   // Fetch tasks from API
   useEffect(() => {
@@ -933,7 +967,10 @@ export default function TasksPage() {
                                   (member: IUserSession) => member.id === id
                                 )
                               )
-                              .filter(Boolean)
+                              .filter(
+                                (member): member is IUserSession =>
+                                  member !== undefined
+                              )
                               .map((member: IUserSession) => member.fullName);
                           };
                           const assigneeNames = getAssigneeNames(

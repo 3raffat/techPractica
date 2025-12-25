@@ -31,6 +31,7 @@ export default function ProjectDetailPage() {
   });
   const session = UserSession ?? [];
   const SessionData = session?.data?.data;
+  console.log("SessionData", SessionData);
   const fieldName = SessionData?.requirements.map((x) => x.field) ?? [];
   const TechNames =
     SessionData?.requirements.flatMap((x) => x.technologies) ?? [];
@@ -91,25 +92,25 @@ export default function ProjectDetailPage() {
       {/* Hero Section - Full Width */}
       <div className="relative bg-gradient-to-br from-[#42D5AE]/10 via-[#42D5AE]/5 to-[#022639]/5 border-b-2 border-gray-100">
         {/* Decorative Elements */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#42D5AE]/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#42D5AE]/5 rounded-full blur-2xl"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-[#42D5AE]/5 rounded-full blur-3xl"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#42D5AE]/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#42D5AE]/5 rounded-full blur-2xl"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 bg-[#42D5AE]/5 rounded-full blur-3xl"></div>
 
         {/* Hero Content Container */}
-        <div className="relative z-10 max-w-7xl mx-auto px-6 py-10 sm:px-8 sm:py-16 lg:px-12">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 py-6 sm:px-8 sm:py-8 lg:px-12">
           {/* Back Button */}
           <button
             onClick={() => {
               page == "explore" ? router("/explore") : router("/workspace");
             }}
-            className="group flex items-center gap-2 text-gray-700 hover:text-[#42D5AE] transition-all duration-200 mb-8 font-semibold px-4 py-2 rounded-xl hover:bg-white/60 backdrop-blur-sm"
+            className="group flex items-center gap-2 text-gray-700 hover:text-[#42D5AE] transition-all duration-200 mb-4 font-semibold px-4 py-2 rounded-xl hover:bg-white/60 backdrop-blur-sm"
           >
             <GoArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-200" />
             <span>Back</span>
           </button>
 
           {/* System Badge */}
-          <div className="inline-flex items-center gap-2.5 bg-gradient-to-r from-[#42D5AE]/15 to-[#42D5AE]/10 border border-[#42D5AE]/30 px-4 py-2.5 rounded-full mb-6 shadow-lg">
+          <div className="inline-flex items-center gap-2.5 bg-gradient-to-r from-[#42D5AE]/15 to-[#42D5AE]/10 border border-[#42D5AE]/30 px-4 py-2.5 rounded-full mb-4 shadow-lg">
             <div className="w-2 h-2 bg-[#42D5AE] rounded-full animate-pulse"></div>
             <span className="text-sm font-bold text-[#022639]">
               {SessionData?.system.name}
@@ -117,28 +118,40 @@ export default function ProjectDetailPage() {
           </div>
 
           {/* Title */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#022639] mb-8 leading-tight text-balance max-w-4xl">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#022639] mb-4 leading-tight text-balance max-w-4xl">
             {SessionData?.name}
           </h1>
 
-          {/* Owner Info */}
-          <div
-            className="flex items-center gap-4 cursor-pointer group"
-            onClick={() => {
-              router(`/explore/profile/${343}`);
-            }}
-          >
-            <div className="h-16 w-16 rounded-full bg-gradient-to-br from-[#42D5AE] via-[#3fc9a0] to-[#38b28d] flex items-center justify-center text-white text-lg font-bold shadow-xl ring-4 ring-white/50 group-hover:ring-[#42D5AE]/30 transition-all duration-300 group-hover:scale-110">
-              {getInitials(SessionData?.ownerFullName!)}
+          {/* Owner Info & CTA */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-4">
+            <div
+              className="flex items-center gap-3 cursor-pointer group"
+              onClick={() => {
+                router(`/explore/profile/${343}`);
+              }}
+            >
+              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#42D5AE] via-[#3fc9a0] to-[#38b28d] flex items-center justify-center text-white text-base font-bold shadow-xl ring-4 ring-white/50 group-hover:ring-[#42D5AE]/30 transition-all duration-300 group-hover:scale-110">
+                {getInitials(SessionData?.ownerFullName!)}
+              </div>
+              <div>
+                <p className="text-xs text-gray-600 font-medium mb-0.5">
+                  Created by
+                </p>
+                <p className="text-lg font-bold text-[#022639] group-hover:text-[#42D5AE] transition-colors">
+                  {SessionData?.ownerFullName!}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-gray-600 font-medium mb-1">
-                Created by
-              </p>
-              <p className="text-xl font-bold text-[#022639] group-hover:text-[#42D5AE] transition-colors">
-                {SessionData?.ownerFullName!}
-              </p>
-            </div>
+
+            {/* CTA Button */}
+            {page !== "workspace" && (
+              <button
+                onClick={() => setShowRequestModal(true)}
+                className="px-6 py-2.5 bg-gradient-to-r from-[#42D5AE] via-[#3fc9a0] to-[#38b28d] hover:from-[#38b28d] hover:via-[#3fc9a0] hover:to-[#42D5AE] text-white rounded-xl font-bold text-sm shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 whitespace-nowrap"
+              >
+                Request Session
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -202,33 +215,6 @@ export default function ProjectDetailPage() {
             </p>
           </div>
         </div>
-
-        {/* Enroll Section */}
-        {page !== "workspace" && (
-          <div className="relative bg-gradient-to-br from-[#42D5AE]/10 via-[#42D5AE]/5 to-[#022639]/5 rounded-3xl p-8 sm:p-12 border-2 border-[#42D5AE]/30 shadow-2xl overflow-hidden">
-            {/* Decorative elements */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[#42D5AE]/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#42D5AE]/5 rounded-full blur-2xl -ml-24 -mb-24"></div>
-
-            <div className="relative flex flex-col sm:flex-row items-center justify-between gap-8">
-              <div className="text-center sm:text-left">
-                <p className="text-2xl font-bold text-[#022639] mb-3">
-                  Let's get you started!
-                </p>
-                <p className="text-base text-gray-700 font-medium">
-                  🚀 Spots are filling fast — join now and grow with us!
-                </p>
-              </div>
-
-              <button
-                onClick={() => setShowRequestModal(true)}
-                className="w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-[#42D5AE] via-[#3fc9a0] to-[#38b28d] hover:from-[#38b28d] hover:via-[#3fc9a0] hover:to-[#42D5AE] text-white rounded-xl font-bold text-lg shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 whitespace-nowrap"
-              >
-                Request Session
-              </button>
-            </div>
-          </div>
-        )}
       </div>
       {showRequestModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
