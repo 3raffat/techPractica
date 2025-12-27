@@ -4,11 +4,13 @@ import type {
   ApiError,
   RequestFormData,
   SessionResponse,
+  ISessionsResponse,
 } from "../../interfaces";
 import { getInitials } from "../../data/data";
 import { GoArrowLeft } from "react-icons/go";
 import { PiBookOpenTextLight } from "react-icons/pi";
 import { BsX } from "react-icons/bs";
+import { FiCode } from "react-icons/fi";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import axiosInstance from "../../config/axios.config";
@@ -19,7 +21,9 @@ import { motion } from "framer-motion";
 
 export default function ProjectDetailPage() {
   const [showRequestModal, setShowRequestModal] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
   /* ------------------ Fetch Data ------------------ */
   const { id } = useParams();
   const token = getToken();
@@ -43,6 +47,67 @@ export default function ProjectDetailPage() {
     formState: { errors },
     reset,
   } = useForm<RequestFormData>();
+
+  /* ------------------ Join with Code ------------------ */
+  const {
+    register: registerJoin,
+    handleSubmit: handleJoinSubmit,
+    formState: { errors: joinErrors },
+    reset: resetJoin,
+  } = useForm<{ sessionCode: string }>();
+
+  const onJoinSubmit = async (data: { sessionCode: string }) => {
+    try {
+      setIsJoining(true);
+
+      // First, find the session by code to get the sessionId
+      const searchResponse = await axiosInstance.get<ISessionsResponse>(
+        `/sessions/spec?sessionCode=${data.sessionCode.trim()}&page=0&size=1`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const sessions = searchResponse.data?.data?.sessions;
+      if (!sessions || sessions.length === 0) {
+        toast.error("Session not found with the provided code.", {
+          position: "top-right",
+          duration: 2000,
+        });
+        return;
+      }
+
+      const sessionId = sessions[0].id;
+
+      // Then join the session using PUT /sessions/joins/{sessionId}
+      await axiosInstance.put(`/sessions/joins/${sessionId}`, null, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      toast.success("Successfully joined the session!", {
+        position: "top-right",
+        duration: 2000,
+      });
+
+      resetJoin();
+      setShowJoinModal(false);
+
+      // Navigate to workspace or refresh
+      router("/workspace");
+    } catch (err) {
+      const error = err as AxiosError<ApiError>;
+      toast.error(error.response?.data.message || "Failed to join session.", {
+        position: "top-right",
+        duration: 2000,
+      });
+    } finally {
+      setIsJoining(false);
+    }
+  };
   const onSubmit = async (data: RequestFormData) => {
     const reqId = SessionData?.requirements.find(
       (x) => x.field === data.requirementName
@@ -124,33 +189,48 @@ export default function ProjectDetailPage() {
 
           {/* Owner Info & CTA */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-4">
-            <div
-              className="flex items-center gap-3 cursor-pointer group"
-              onClick={() => {
-                router(`/explore/profile/${343}`);
-              }}
-            >
-              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#42D5AE] via-[#3fc9a0] to-[#38b28d] flex items-center justify-center text-white text-base font-bold shadow-xl ring-4 ring-white/50 group-hover:ring-[#42D5AE]/30 transition-all duration-300 group-hover:scale-110">
-                {getInitials(SessionData?.ownerFullName!)}
-              </div>
-              <div>
-                <p className="text-xs text-gray-600 font-medium mb-0.5">
-                  Created by
-                </p>
-                <p className="text-lg font-bold text-[#022639] group-hover:text-[#42D5AE] transition-colors">
-                  {SessionData?.ownerFullName!}
-                </p>
-              </div>
-            </div>
-
-            {/* CTA Button */}
-            {page !== "workspace" && (
-              <button
-                onClick={() => setShowRequestModal(true)}
-                className="px-6 py-2.5 bg-gradient-to-r from-[#42D5AE] via-[#3fc9a0] to-[#38b28d] hover:from-[#38b28d] hover:via-[#3fc9a0] hover:to-[#42D5AE] text-white rounded-xl font-bold text-sm shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 whitespace-nowrap"
+            {SessionData?.ownerId && SessionData?.ownerFullName && (
+              <div
+                className="flex items-center gap-3 cursor-pointer group"
+                onClick={() => {
+                  const profilePath =
+                    page === "workspace"
+                      ? `/workspace/profile/${SessionData.ownerId}`
+                      : `/explore/profile/${SessionData.ownerId}`;
+                  router(profilePath);
+                }}
               >
-                Request Session
-              </button>
+                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#42D5AE] via-[#3fc9a0] to-[#38b28d] flex items-center justify-center text-white text-base font-bold shadow-xl ring-4 ring-white/50 group-hover:ring-[#42D5AE]/30 transition-all duration-300 group-hover:scale-110">
+                  {getInitials(SessionData.ownerFullName)}
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600 font-medium mb-0.5">
+                    Created by
+                  </p>
+                  <p className="text-lg font-bold text-[#022639] group-hover:text-[#42D5AE] transition-colors">
+                    {SessionData.ownerFullName}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* CTA Buttons */}
+            {page !== "workspace" && (
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => setShowJoinModal(true)}
+                  className="px-6 py-2.5 bg-white border-2 border-[#42D5AE] text-[#42D5AE] hover:bg-[#42D5AE] hover:text-white rounded-xl font-bold text-sm shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 whitespace-nowrap flex items-center justify-center gap-2"
+                >
+                  <FiCode className="w-4 h-4" />
+                  Join with Code
+                </button>
+                <button
+                  onClick={() => setShowRequestModal(true)}
+                  className="px-6 py-2.5 bg-gradient-to-r from-[#42D5AE] via-[#3fc9a0] to-[#38b28d] hover:from-[#38b28d] hover:via-[#3fc9a0] hover:to-[#42D5AE] text-white rounded-xl font-bold text-sm shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 whitespace-nowrap"
+                >
+                  Request Session
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -216,6 +296,93 @@ export default function ProjectDetailPage() {
           </div>
         </div>
       </div>
+      {/* Join with Code Modal */}
+      {showJoinModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="bg-white rounded-3xl max-w-lg w-full shadow-2xl border-2 border-gray-100 overflow-hidden"
+          >
+            <div className="bg-gradient-to-r from-[#42D5AE] via-[#3fc9a0] to-[#38b28d] p-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <FiCode className="w-6 h-6 text-white" />
+                <h2 className="text-2xl font-bold text-white">
+                  Join with Code
+                </h2>
+              </div>
+              <button
+                onClick={() => {
+                  resetJoin();
+                  setShowJoinModal(false);
+                }}
+                className="p-2 hover:bg-white/20 rounded-xl transition-all duration-200 text-white hover:scale-110 active:scale-95"
+              >
+                <BsX className="w-6 h-6" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={handleJoinSubmit(onJoinSubmit)}
+              className="p-6 bg-gradient-to-b from-white to-gray-50/50"
+            >
+              <div className="mb-6">
+                <label className="block text-sm font-bold text-gray-900 mb-3 tracking-wide">
+                  Session Code <span className="text-[#42D5AE]">*</span>
+                </label>
+                <div className="relative">
+                  <FiCode className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    {...registerJoin("sessionCode", {
+                      required: "Session code is required",
+                      pattern: {
+                        value: /^[A-Za-z0-9\-_.~]{16}$/,
+                        message:
+                          "Session code must be exactly 16 characters (A-Z, a-z, 0-9, -, _, ., ~)",
+                      },
+                    })}
+                    type="text"
+                    maxLength={16}
+                    placeholder="Enter 16-character session code..."
+                    className="w-full pl-12 pr-4 py-3.5 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#42D5AE]/30 focus:border-[#42D5AE] outline-none transition-all duration-200 hover:border-gray-300 shadow-sm font-mono text-sm"
+                  />
+                </div>
+                {joinErrors.sessionCode && (
+                  <p className="text-red-500 text-sm mt-2 font-medium">
+                    {joinErrors.sessionCode.message}
+                  </p>
+                )}
+                <p className="text-xs text-gray-500 mt-2">
+                  Enter the 16-character session code to join
+                </p>
+              </div>
+
+              <div className="flex gap-4 pt-2 border-t-2 border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    resetJoin();
+                    setShowJoinModal(false);
+                  }}
+                  className="flex-1 px-6 py-3.5 bg-white border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 shadow-sm hover:shadow-md"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isJoining}
+                  className="flex-1 px-6 py-3.5 bg-gradient-to-r from-[#42D5AE] via-[#3fc9a0] to-[#38b28d] hover:from-[#38b28d] hover:via-[#3fc9a0] hover:to-[#42D5AE] text-white rounded-xl font-bold hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
+                >
+                  {isJoining ? "Joining..." : "Join Session"}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Request Session Modal */}
       {showRequestModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
           <motion.div

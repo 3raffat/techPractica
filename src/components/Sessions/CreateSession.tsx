@@ -114,7 +114,7 @@ const CreateSession = () => {
     };
 
     try {
-      await axiosInstance.post("/sessions/", payload, {
+      var res = await axiosInstance.post("/sessions/", payload, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -131,7 +131,19 @@ const CreateSession = () => {
       }, 500);
     } catch (err) {
       const error = err as AxiosError<ApiError>;
-      toast.error(`${error.response?.data.message}`, {
+      const errorMessage = error.response?.data.message || "";
+
+      if (
+        errorMessage.includes(
+          "GitHub access token is invalid or expired. User must re-authenticate"
+        )
+      ) {
+        const baseUrl = "http://localhost:8080";
+        window.location.href = `${baseUrl}/auth/github/connect`;
+        return;
+      }
+
+      toast.error(errorMessage, {
         position: "top-right",
         duration: 2000,
       });

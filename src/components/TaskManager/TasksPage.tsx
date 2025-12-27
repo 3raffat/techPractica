@@ -11,7 +11,14 @@ import {
   useSensors,
   type UniqueIdentifier,
 } from "@dnd-kit/core";
-import { BsPlus, BsSearch, BsTrash2, BsX, BsCalendar } from "react-icons/bs";
+import {
+  BsPlus,
+  BsSearch,
+  BsTrash2,
+  BsX,
+  BsCalendar,
+  BsBarChart,
+} from "react-icons/bs";
 import { TaskModal } from "./TaskModal";
 import { EditTaskModal } from "./EditTaskModal";
 import { FiEdit3, FiStopCircle } from "react-icons/fi";
@@ -21,6 +28,8 @@ import {
   IUserSession,
   SessionResponse,
   IProfileResponse,
+  ISessionStatistics,
+  ISessionStatisticsResponse,
 } from "../../interfaces";
 import { DroppableColumn } from "./DroppableColumn";
 import { FaArrowLeft } from "react-icons/fa";
@@ -43,6 +52,9 @@ export default function TasksPage() {
   const [error, setError] = useState<string | null>(null);
   const [showEndSessionModal, setShowEndSessionModal] = useState(false);
   const [isEndingSession, setIsEndingSession] = useState(false);
+  const [showStatisticsModal, setShowStatisticsModal] = useState(false);
+  const [statistics, setStatistics] = useState<ISessionStatistics | null>(null);
+  const [isLoadingStatistics, setIsLoadingStatistics] = useState(false);
   const Navigate = useNavigate();
   const { id } = useParams();
   const token = getToken();
@@ -50,8 +62,6 @@ export default function TasksPage() {
     queryKey: [`UserSession`],
     url: `/sessions/by-id/${id}`,
   });
-
-  // Fetch current user profile to check ownership
   const { data: userProfile } = useAuthQuery<IProfileResponse>({
     queryKey: [`profile-data-${token}`],
     url: "/profile/",
@@ -62,28 +72,21 @@ export default function TasksPage() {
     },
   });
 
-  // Extract data from API response
   const sessionData = UserSession.data?.data;
 
-  // Get current user's full name
   const userInfo = userProfile?.data?.user;
   const currentUserFullName = userInfo
     ? [userInfo.firstName, userInfo.lastName].filter(Boolean).join(" ")
     : "";
 
-  // Check if current user is the session owner
   const isOwner = sessionData?.ownerFullName === currentUserFullName;
 
-  // Check if session has ended
   const isSessionEnded = sessionData?.status === "ENDED";
   const field = sessionData?.requirements?.map((req) => req.field) || [];
 
-  // Extract session members/users from API response
-  // SessionResponse interface may not include members, but the API might return them
   const rawMembers =
     (sessionData as any)?.users || (sessionData as any)?.members || [];
 
-  // Transform members to IUserSession format if needed
   const sessionMember: IUserSession[] = rawMembers.map((member: any) => {
     // Helper function to get full name from firstName and lastName
     const getFullName = (obj: any): string => {
@@ -108,7 +111,6 @@ export default function TasksPage() {
     };
   });
 
-  // Fetch tasks from API
   useEffect(() => {
     const fetchTasks = async () => {
       if (!id) {
@@ -145,7 +147,6 @@ export default function TasksPage() {
     fetchTasks();
   }, [id]);
 
-  // Map API status to column IDs
   const mapStatusToColumnId = (status: string): string => {
     const statusMap: Record<string, string> = {
       TO_DO: "todo",
@@ -157,7 +158,6 @@ export default function TasksPage() {
     return statusMap[status] || "todo";
   };
 
-  // Map column IDs to API status
   const mapColumnIdToStatus = (columnId: string): string => {
     const columnMap: Record<string, string> = {
       todo: "TO_DO",
@@ -169,7 +169,6 @@ export default function TasksPage() {
     return columnMap[columnId] || "TO_DO";
   };
 
-  // Filter tasks based on search and filters (exclude deleted tasks)
   const filteredTasks = tasks.filter((task) => {
     // Exclude deleted tasks from the board
     if (task.status === "DELETED") return false;
@@ -194,7 +193,6 @@ export default function TasksPage() {
     return matchesSearch && matchesAssignee && matchesType;
   });
 
-  // Group tasks by status
   const tasksByStatus = columns.reduce((acc, column) => {
     acc[column.id] = filteredTasks.filter(
       (task) => mapStatusToColumnId(task.status) === column.id
@@ -202,7 +200,6 @@ export default function TasksPage() {
     return acc;
   }, {} as Record<string, any[]>);
 
-  // Conditionally create sensors - disable drag if session has ended
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -521,9 +518,36 @@ export default function TasksPage() {
     }
   };
 
-  // const activeTask = activeId
-  //   ? tasks.find((task) => task.id === activeId)
-  //   : null;
+  const handleShowStatistics = async () => {
+    if (!id) {
+      toast.error("Session ID is missing");
+      return;
+    }
+
+    try {
+      setIsLoadingStatistics(true);
+      setShowStatisticsModal(true);
+      const response = await axios.get<ISessionStatisticsResponse>(
+        `http://localhost:8080/api/v1/sessions/statistics/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setStatistics(response.data.data);
+      console.log(statistics);
+    } catch (err: any) {
+      console.error("Error fetching statistics:", err);
+      toast.error(err.response?.data?.message || "Failed to load statistics", {
+        position: "top-right",
+        duration: 2000,
+      });
+      setShowStatisticsModal(false);
+    } finally {
+      setIsLoadingStatistics(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -554,16 +578,28 @@ export default function TasksPage() {
             </div>
 
             <div className="flex items-center gap-4">
-              <motion.button
-                whileHover={!isSessionEnded ? { scale: 1.05 } : {}}
-                whileTap={!isSessionEnded ? { scale: 0.95 } : {}}
-                onClick={handleCreateTask}
-                disabled={isSessionEnded}
-                className="bg-gradient-to-r from-[#42D5AE] to-[#38b28d] hover:from-[#38b28d] hover:to-[#42D5AE] text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-              >
-                <BsPlus className="w-4 h-4" />
-                Create Task
-              </motion.button>
+              {!isSessionEnded && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleCreateTask}
+                  className="bg-gradient-to-r from-[#42D5AE] to-[#38b28d] hover:from-[#38b28d] hover:to-[#42D5AE] text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 shadow-lg"
+                >
+                  <BsPlus className="w-4 h-4" />
+                  Create Task
+                </motion.button>
+              )}
+              {isSessionEnded && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleShowStatistics}
+                  className="bg-gradient-to-r from-[#42D5AE] to-[#38b28d] hover:from-[#38b28d] hover:to-[#42D5AE] text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 shadow-lg"
+                >
+                  <BsBarChart className="w-4 h-4" />
+                  Statistics
+                </motion.button>
+              )}
               {isOwner && (
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -694,39 +730,6 @@ export default function TasksPage() {
                 />
               ))}
             </div>
-
-            {/* <DragOverlay>
-              {activeTask ? (
-                <div className="bg-white rounded-xl border-2 border-[#42D5AE] p-4 shadow-2xl rotate-3 scale-105 opacity-90">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <BsGripVertical className="w-4 h-4 text-[#42D5AE]" />
-                      <div className="flex items-center gap-1">
-                        {(() => {
-                          const taskType = taskTypes.find(
-                            (t) => t.id === activeTask.type
-                          );
-                          if (!taskType) return null;
-                          const Icon = taskType.icon;
-                          return (
-                            <Icon
-                              className="w-4 h-4"
-                              style={{ color: taskType.color }}
-                            />
-                          );
-                        })()}
-                        <span className="text-xs font-medium text-gray-500">
-                          {activeTask.id}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <h3 className="font-medium text-gray-900 mb-2 line-clamp-2 leading-tight">
-                    {activeTask.title}
-                  </h3>
-                </div>
-              ) : null}
-            </DragOverlay> */}
           </DndContext>
         )}
       </div>
@@ -1185,6 +1188,211 @@ export default function TasksPage() {
                     </button>
                   </div>
                 </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Statistics Modal */}
+      <AnimatePresence>
+        {showStatisticsModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={() => setShowStatisticsModal(false)}
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="bg-gradient-to-r from-[#42D5AE] via-[#3fc9a0] to-[#38b28d] p-6 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <BsBarChart className="w-6 h-6 text-white" />
+                  <h2 className="text-2xl font-bold text-white">
+                    Session Statistics
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setShowStatisticsModal(false)}
+                  className="p-2 hover:bg-white/20 rounded-xl transition-all duration-200 text-white hover:scale-110 active:scale-95"
+                >
+                  <BsX className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-white to-gray-50/50">
+                {isLoadingStatistics ? (
+                  <div className="flex items-center justify-center py-20">
+                    <div className="text-center">
+                      <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#42D5AE]"></div>
+                      <p className="mt-4 text-gray-600">
+                        Loading statistics...
+                      </p>
+                    </div>
+                  </div>
+                ) : statistics ? (
+                  <div className="space-y-6">
+                    {/* Overall Statistics */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-gradient-to-br from-[#42D5AE]/10 to-[#42D5AE]/5 border-2 border-[#42D5AE]/30 rounded-xl p-6 shadow-lg">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-12 h-12 rounded-full bg-[#42D5AE] flex items-center justify-center">
+                            <BsBarChart className="w-6 h-6 text-white" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-600">
+                              Total Tasks
+                            </p>
+                            <p className="text-3xl font-bold text-[#022639]">
+                              {statistics.totalTasks}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-2 border-blue-500/30 rounded-xl p-6 shadow-lg">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center">
+                            <BsCalendar className="w-6 h-6 text-white" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-600">
+                              Duration
+                            </p>
+                            <p className="text-xl font-bold text-[#022639]">
+                              {statistics.duration !== undefined &&
+                              statistics.duration !== null
+                                ? `${statistics.duration} day${
+                                    statistics.duration !== 1 ? "s" : ""
+                                  }`
+                                : "N/A"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* User Statistics */}
+                    <div>
+                      <h3 className="text-xl font-bold text-[#022639] mb-4 flex items-center gap-2">
+                        <span className="w-1 h-6 bg-[#42D5AE] rounded-full"></span>
+                        User Performance
+                      </h3>
+                      <div className="space-y-4">
+                        {statistics.userTaskStatisticsResources &&
+                        Array.isArray(statistics.userTaskStatisticsResources) &&
+                        statistics.userTaskStatisticsResources.length > 0 ? (
+                          statistics.userTaskStatisticsResources.map(
+                            (userStat, index) => {
+                              const completionRate =
+                                userStat.assignedTasksCount > 0
+                                  ? Math.round(
+                                      (userStat.onTimeTasksCount /
+                                        userStat.assignedTasksCount) *
+                                        100
+                                    )
+                                  : 0;
+                              return (
+                                <motion.div
+                                  key={userStat.userId}
+                                  initial={{ opacity: 0, y: 20 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ delay: index * 0.1 }}
+                                  className="bg-white border-2 border-gray-200 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-200"
+                                >
+                                  <div className="flex items-start justify-between mb-4">
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#42D5AE] to-[#38b28d] flex items-center justify-center text-white font-bold text-lg">
+                                        {getInitials(userStat.name)}
+                                      </div>
+                                      <div>
+                                        <p className="text-lg font-bold text-[#022639]">
+                                          {userStat.name}
+                                        </p>
+                                        <p className="text-sm text-gray-500">
+                                          User ID: {userStat.userId.slice(0, 8)}
+                                          ...
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="text-2xl font-bold text-[#42D5AE]">
+                                        {completionRate}%
+                                      </p>
+                                      <p className="text-xs text-gray-500">
+                                        On-Time Rate
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                      <p className="text-sm font-medium text-gray-600 mb-1">
+                                        Assigned Tasks
+                                      </p>
+                                      <p className="text-2xl font-bold text-[#022639]">
+                                        {userStat.assignedTasksCount}
+                                      </p>
+                                    </div>
+                                    <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                                      <p className="text-sm font-medium text-green-700 mb-1">
+                                        Completed On-Time
+                                      </p>
+                                      <p className="text-2xl font-bold text-green-700">
+                                        {userStat.onTimeTasksCount}
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  {/* Progress Bar */}
+                                  <div className="mt-4">
+                                    <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                                      <span>Completion Rate</span>
+                                      <span>{completionRate}%</span>
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                                      <motion.div
+                                        initial={{ width: 0 }}
+                                        animate={{
+                                          width: `${completionRate}%`,
+                                        }}
+                                        transition={{
+                                          duration: 0.8,
+                                          delay: index * 0.1,
+                                        }}
+                                        className="h-full bg-gradient-to-r from-[#42D5AE] to-[#38b28d] rounded-full"
+                                      />
+                                    </div>
+                                  </div>
+                                </motion.div>
+                              );
+                            }
+                          )
+                        ) : (
+                          <div className="text-center py-8 bg-gray-50 rounded-xl border-2 border-gray-200">
+                            <p className="text-gray-600">
+                              No user statistics available
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-gray-600">No statistics available</p>
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>

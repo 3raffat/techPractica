@@ -67,6 +67,7 @@ const UserProfileForm = () => {
   };
 
   const onSubmit = async (data: IUserProfileRequestType) => {
+    console.log(data);
     try {
       await axiosInstance.post("/profile/", data, {
         headers: {

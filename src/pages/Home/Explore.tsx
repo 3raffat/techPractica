@@ -1,6 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiSearch, FiFilter, FiGrid, FiList, FiSliders } from "react-icons/fi";
+import {
+  FiSearch,
+  FiFilter,
+  FiGrid,
+  FiList,
+  FiSliders,
+  FiCode,
+} from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useSystems } from "../../api";
 import ExploreProjectCard from "../../components/Cards/ExploreSessionCard";
@@ -34,9 +41,20 @@ export default function Explore() {
   const System = useSystems();
   const Systems = System.data?.data.systems ?? [];
 
+  // Session code validation pattern: ^[A-Za-z0-9\-_.~]{16}$
+  const sessionCodePattern = /^[A-Za-z0-9\-_.~]{16}$/;
+
+  // Detect if search term is a session code (exactly 16 characters matching pattern)
+  const isSessionCode =
+    searchTerm.trim() !== "" && sessionCodePattern.test(searchTerm.trim());
+  const isSessionName = searchTerm.trim() !== "" && !isSessionCode;
+
   // Check if any filter is active
   const hasActiveFilters =
     searchTerm.trim() !== "" || selectedCategory !== "All";
+
+  // Check if we should use the search endpoint
+  const useSearchEndpoint = searchTerm.trim() !== "";
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -59,11 +77,37 @@ export default function Explore() {
       : {}),
   });
 
-  // Fetch all sessions when filters are active, otherwise use pagination
-  // Using a large size (10000) to ensure we get all sessions when filtering
+  // Build search endpoint URL with query parameters
+  const buildSearchUrl = () => {
+    const params = new URLSearchParams();
+    if (isSessionCode) {
+      // If input matches session code pattern, use it as sessionCode
+      params.append("sessionCode", searchTerm.trim());
+    } else if (isSessionName) {
+      // Otherwise, use it as sessionName
+      params.append("sessionName", searchTerm.trim());
+    }
+    params.append("page", String(currentPage - 1));
+    params.append("size", String(ITEMS_PER_PAGE));
+    return `/sessions/spec?${params.toString()}`;
+  };
+
+  // Fetch sessions using search endpoint when searching
+  const shouldUseSearchEndpoint = useSearchEndpoint;
+
   const useExploreSessionx = useAuthQuery<ISessionsResponse>({
-    queryKey: [`SessionData-${hasActiveFilters ? "all" : currentPage}`],
-    url: hasActiveFilters
+    queryKey: [
+      `SessionData-${
+        shouldUseSearchEndpoint
+          ? "search"
+          : hasActiveFilters
+          ? "all"
+          : currentPage
+      }-${searchTerm}-${currentPage}`,
+    ],
+    url: shouldUseSearchEndpoint
+      ? buildSearchUrl()
+      : hasActiveFilters
       ? `/sessions/?size=10000&page=0`
       : `/sessions/?size=${ITEMS_PER_PAGE}&page=${currentPage - 1}`,
     ...(token
@@ -80,19 +124,23 @@ export default function Explore() {
   const Session = useExploreSessionx;
   const allSessions = Session.data?.data.sessions ?? [];
 
-  // Filter sessions client-side when filters are active
+  // Filter sessions client-side when filters are active (only for category when using search endpoint)
   const filteredAndSortedSessions = useMemo(() => {
     let filtered = [...allSessions];
 
-    // Search filter - filter by session name only
-    if (searchTerm.trim()) {
-      const searchLower = searchTerm.toLowerCase().trim();
-      filtered = filtered.filter((session) =>
-        session.name.toLowerCase().includes(searchLower)
-      );
+    // If using search endpoint, server already filtered by name/code, so only filter by category
+    // If not using search endpoint, filter by name and category client-side
+    if (!shouldUseSearchEndpoint) {
+      // Search filter - filter by session name only (client-side)
+      if (searchTerm.trim()) {
+        const searchLower = searchTerm.toLowerCase().trim();
+        filtered = filtered.filter((session) =>
+          session.name.toLowerCase().includes(searchLower)
+        );
+      }
     }
 
-    // Category filter
+    // Category filter (always client-side)
     if (selectedCategory !== "All") {
       filtered = filtered.filter(
         (session) => session.system.name === selectedCategory
@@ -100,17 +148,21 @@ export default function Explore() {
     }
 
     return filtered;
-  }, [allSessions, searchTerm, selectedCategory]);
+  }, [allSessions, searchTerm, selectedCategory, shouldUseSearchEndpoint]);
 
   // Pagination for filtered results
   const totalFilteredPages = Math.ceil(
     filteredAndSortedSessions.length / ITEMS_PER_PAGE
   );
 
-  // When filters are active, use client-side pagination on filtered results
-  // When no filters, use server-side pagination directly (no client-side pagination needed)
+  // When using search endpoint, server handles pagination
+  // When filters are active but not using search, use client-side pagination
+  // When no filters, use server-side pagination directly
   const paginatedSessions = useMemo(() => {
-    if (hasActiveFilters) {
+    if (shouldUseSearchEndpoint) {
+      // Search endpoint already paginated on server
+      return filteredAndSortedSessions;
+    } else if (hasActiveFilters) {
       // Client-side pagination for filtered results
       const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
       const endIndex = startIndex + ITEMS_PER_PAGE;
@@ -119,15 +171,22 @@ export default function Explore() {
       // No filters: use sessions directly from server (already paginated)
       return filteredAndSortedSessions;
     }
-  }, [filteredAndSortedSessions, currentPage, hasActiveFilters]);
+  }, [
+    filteredAndSortedSessions,
+    currentPage,
+    hasActiveFilters,
+    shouldUseSearchEndpoint,
+  ]);
 
   const SessionData = paginatedSessions;
   const Sessionlength = SessionData.length;
 
-  // Calculate total pages: use filtered pages when filters are active, otherwise use count from all sessions
+  // Calculate total pages
   const totalItemsCount = allSessionsCountData?.data?.sessions?.length ?? 0;
-  const totalPages = hasActiveFilters
-    ? totalFilteredPages
+  const totalPages = shouldUseSearchEndpoint
+    ? Session.data?.data.totalPages ?? 0 // Use server pagination from search endpoint
+    : hasActiveFilters
+    ? totalFilteredPages // Client-side pagination for category filter
     : totalItemsCount > 0
     ? Math.ceil(totalItemsCount / ITEMS_PER_PAGE)
     : 0;
@@ -175,16 +234,27 @@ export default function Explore() {
       <section className="py-8 bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-            {/* Search */}
+            {/* Search Input */}
             <div className="relative flex-1 max-w-md">
-              <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              {isSessionCode ? (
+                <FiCode className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#42D5AE] h-4 w-4" />
+              ) : (
+                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              )}
               <input
                 type="text"
-                placeholder="Search by session name..."
+                placeholder="Search by session name or code..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none transition-all"
+                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#42D5AE] focus:border-transparent outline-none transition-all ${
+                  isSessionCode ? "font-mono text-sm" : ""
+                }`}
               />
+              {isSessionCode && searchTerm.trim() !== "" && (
+                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-[#42D5AE] font-medium">
+                  Code
+                </span>
+              )}
             </div>
 
             {/* Filter Toggle (Mobile) */}

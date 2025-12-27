@@ -9,10 +9,17 @@ import {
 import { useNavigate } from "react-router-dom";
 import { BsEye } from "react-icons/bs";
 import { useState } from "react";
-import { FiEdit3, FiMoreVertical } from "react-icons/fi";
+import {
+  FiEdit3,
+  FiMoreVertical,
+  FiCopy,
+  FiCheck,
+  FiCode,
+} from "react-icons/fi";
 import { LuGitPullRequest } from "react-icons/lu";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { MdOutlineSpaceDashboard } from "react-icons/md";
+import toast from "react-hot-toast";
 
 interface IProps {
   session: ISession;
@@ -27,7 +34,25 @@ export function WorkSpaceSessionCard({
   onEdit,
 }: IProps) {
   const [showMenu, setShowMenu] = useState(false);
+  const [copied, setCopied] = useState(false);
   const Navigate = useNavigate();
+
+  const handleCopySessionCode = async () => {
+    try {
+      await navigator.clipboard.writeText(session.sessionCode);
+      setCopied(true);
+      toast.success("Session code copied to clipboard!", {
+        position: "top-right",
+        duration: 2000,
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      toast.error("Failed to copy session code", {
+        position: "top-right",
+        duration: 2000,
+      });
+    }
+  };
 
   const allTechnologies = session.requirements.flatMap(
     (req) => req.technologies
@@ -118,8 +143,39 @@ export function WorkSpaceSessionCard({
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: -10 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute right-0 top-full mt-2 w-52 bg-white border-2 border-gray-200 rounded-2xl shadow-2xl z-20 py-2 overflow-hidden"
+                      className="absolute right-0 top-full mt-2 w-64 bg-white border-2 border-gray-200 rounded-2xl shadow-2xl z-20 py-2 overflow-hidden"
                     >
+                      {/* Session Code Section */}
+                      {session.role != "PARTICIPATE" && (
+                        <>
+                          <div className="px-5 py-3 border-b border-gray-200">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <FiCode className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block">
+                                    Session Code
+                                  </label>
+                                  <p className="text-sm font-mono font-bold text-[#022639] truncate">
+                                    {session.sessionCode}
+                                  </p>
+                                </div>
+                              </div>
+                              <button
+                                onClick={handleCopySessionCode}
+                                className="flex-shrink-0 p-1.5 rounded-md hover:bg-[#42D5AE]/10 transition-all duration-200 group"
+                                title="Copy session code"
+                              >
+                                {copied ? (
+                                  <FiCheck className="w-4 h-4 text-[#42D5AE]" />
+                                ) : (
+                                  <FiCopy className="w-4 h-4 text-gray-600 group-hover:text-[#42D5AE] transition-colors" />
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        </>
+                      )}
                       <button
                         onClick={onClick}
                         disabled={session.status?.toUpperCase() === "WAITING"}

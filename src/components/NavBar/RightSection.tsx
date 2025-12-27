@@ -45,7 +45,7 @@ const RightSection = ({
       return data;
     },
     enabled: isTokenValid,
-    refetchInterval: 7000, // Refetch every 7 seconds
+    refetchInterval: 7000000, // Refetch every 7 seconds
   });
 
   const notifications = notificationsData?.data.notifications || [];

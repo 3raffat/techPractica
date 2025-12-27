@@ -40,6 +40,7 @@ export const router = createBrowserRouter(
             <Route path="session/:id/requests" element={<SessionRequest />} />
             <Route path="session/:id" element={<SessionDetails />} />
             <Route path="session/:id/task-manager" element={<TasksPage />} />
+            <Route path="profile/:id" element={<ProfilePage />} />
           </Route>
         </Route>
 

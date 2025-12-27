@@ -72,6 +72,7 @@ export interface ISession {
   status: string;
   system: ISystem;
   role: string;
+  sessionCode: string;
   requirements: IRequirement[];
   ownerFullName: string;
   members: Member[];
@@ -294,6 +295,7 @@ export interface SessionResponse {
       technologies: string[];
     }[];
     ownerFullName: string | null;
+    ownerId?: string;
     private: boolean;
   };
   status: number;
@@ -479,6 +481,26 @@ export interface INotificationsResponse {
   };
   status: number;
   message: string;
+}
+
+export interface IUserTaskStatistics {
+  userId: string;
+  name: string;
+  assignedTasksCount: number;
+  onTimeTasksCount: number;
+}
+
+export interface ISessionStatistics {
+  sessionId: string;
+  totalTasks: number;
+  duration: number;
+  userTaskStatisticsResources: IUserTaskStatistics[];
+}
+
+export interface ISessionStatisticsResponse {
+  data: ISessionStatistics;
+  message: string;
+  status: number;
 }
 
 /*-------------------------------------------------------------------------------------------------- */

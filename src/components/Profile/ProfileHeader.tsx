@@ -6,8 +6,9 @@ import { BsCheckCircle } from "react-icons/bs";
 interface IProps {
   user: IUser;
   onEdit: () => void;
+  showEditButton?: boolean;
 }
-function ProfileHeader({ user, onEdit }: IProps) {
+function ProfileHeader({ user, onEdit, showEditButton = true }: IProps) {
   const displayName = user
     ? user.firstName && user.lastName
       ? `${user.firstName} ${user.lastName}`
@@ -51,13 +52,15 @@ function ProfileHeader({ user, onEdit }: IProps) {
           </div>
         </div>
 
-        <button
-          onClick={onEdit}
-          className="flex items-center gap-2 px-6 py-3.5 bg-white text-[#42D5AE] rounded-xl hover:bg-gray-50 transition-all duration-200 font-bold shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98]"
-        >
-          <FiEdit3 className="w-5 h-5" />
-          Edit Profile
-        </button>
+        {showEditButton && (
+          <button
+            onClick={onEdit}
+            className="flex items-center gap-2 px-6 py-3.5 bg-white text-[#42D5AE] rounded-xl hover:bg-gray-50 transition-all duration-200 font-bold shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <FiEdit3 className="w-5 h-5" />
+            Edit Profile
+          </button>
+        )}
       </div>
 
       {user.brief && (
