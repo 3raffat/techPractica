@@ -4,7 +4,7 @@ import { CiLock, CiUser } from "react-icons/ci";
 import toast from "react-hot-toast";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { LoginAxiosResponse } from "../../data/data";
 import { loginSchema, registerSchema } from "../../validation";
@@ -26,7 +26,6 @@ import {
   setRoleAdmin,
   setToken,
 } from "../../helpers/helpers";
-import Cookies from "universal-cookie";
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
   const mode = searchParams.get("mode");
@@ -312,14 +311,14 @@ const AuthPage = () => {
                   </div>
 
                   {/* Forgot Password */}
-                  <div className="text-right">
+                  {/* <div className="text-right">
                     <Link
                       to="/forgot-password"
                       className="text-sm text-[#42D5AE] hover:text-[#38b28d] transition-colors"
                     >
                       Forgot password?
                     </Link>
-                  </div>
+                  </div> */}
 
                   {/* Submit Button */}
                   <motion.button

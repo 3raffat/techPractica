@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HiOutlinePlus } from "react-icons/hi";
+import { FiGithub } from "react-icons/fi";
 import { IErrorResponse, ISessionsResponse, ISystem } from "../../interfaces";
 import { useSystems } from "../../api";
 import { useAuthQuery } from "../../imports";
@@ -45,6 +46,9 @@ export default function WorkSpace() {
   const [OpenDeleteModal, setOpenDeleteModal] = useState(false);
   const [OpenEditModal, setOpenEditModal] = useState(false);
   const [EditSessionId, setEditSessionId] = useState<string | undefined>();
+  const [isGitHubConnected, setIsGitHubConnected] = useState<boolean | null>(
+    null
+  );
   const isDesktop = useIsDesktop();
 
   /*-----------Handlers--------------------------------------------------------------------*/
@@ -119,8 +123,49 @@ export default function WorkSpace() {
   const System = useSystems();
   const Systems = System.data?.data.systems;
 
-  // Fetch all sessions when filters are active, otherwise use pagination
-  // Using a large size (10000) to ensure we get all sessions when filtering
+  // Check GitHub connection status
+  useEffect(() => {
+    const checkGitHubConnection = async () => {
+      if (!token) {
+        setIsGitHubConnected(null);
+        return;
+      }
+
+      try {
+        const response = await axiosInstance.get(
+          `/sessions/github/connection`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const responseMessage =
+          response.data?.message ?? response.data?.data ?? response.data;
+        const connected =
+          responseMessage === "connected" || responseMessage === '"connected"';
+        setIsGitHubConnected(connected);
+      } catch (err: any) {
+        console.error("Error checking GitHub connection:", err);
+        setIsGitHubConnected(false);
+      }
+    };
+
+    checkGitHubConnection();
+  }, [token]);
+
+  const handleConnectGitHub = () => {
+    if (!token) {
+      toast.error("Please log in to connect GitHub", {
+        position: "top-right",
+        duration: 2000,
+      });
+      return;
+    }
+    // Redirect to GitHub OAuth connection
+    window.location.href = `http://localhost:8080/github/connect?token=${token}`;
+  };
+
   const useWorkSpaceSession = useAuthQuery<ISessionsResponse>({
     queryKey: [`SessionData-${hasActiveFilters ? "all" : currentPage}`],
     url: hasActiveFilters
@@ -135,8 +180,6 @@ export default function WorkSpace() {
 
   const usersession = useWorkSpaceSession;
   const allSessions = usersession.data?.data.sessions ?? [];
-  console.log("All Sessions:", allSessions);
-  // Filter and sort sessions
   const filteredAndSortedSessions = useMemo(() => {
     let filtered = [...allSessions];
 
@@ -201,21 +244,16 @@ export default function WorkSpace() {
     sortBy,
   ]);
 
-  // Pagination for filtered results
   const totalFilteredPages = Math.ceil(
     filteredAndSortedSessions.length / ITEMS_PER_PAGE
   );
 
-  // When filters are active, use client-side pagination on filtered results
-  // When no filters, use server-side pagination directly (no client-side pagination needed)
   const paginatedSessions = useMemo(() => {
     if (hasActiveFilters) {
-      // Client-side pagination for filtered results
       const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
       const endIndex = startIndex + ITEMS_PER_PAGE;
       return filteredAndSortedSessions.slice(startIndex, endIndex);
     } else {
-      // No filters: use sessions directly from server (already paginated)
       return filteredAndSortedSessions;
     }
   }, [filteredAndSortedSessions, currentPage, hasActiveFilters]);
@@ -223,12 +261,10 @@ export default function WorkSpace() {
   const Sessionlength = paginatedSessions.length;
   const SessionData = paginatedSessions;
 
-  // Calculate total pages: use filtered pages when filters are active, otherwise use server pagination
   const totalPages = hasActiveFilters
     ? totalFilteredPages
     : usersession.data?.data.totalPages ?? 0;
 
-  // Ensure currentPage doesn't exceed totalPages and is at least 1
   useEffect(() => {
     if (totalPages > 0 && currentPage > totalPages) {
       setCurrentPage(totalPages);
@@ -257,13 +293,23 @@ export default function WorkSpace() {
                 Your personal space for managing Sessions
               </p>
             </div>
-            <Link
-              to="session/new"
-              className="bg-white text-[#022639] hover:bg-gray-50 px-8 py-4 rounded-xl font-bold transition-all duration-300 flex items-center gap-3 shadow-lg"
-            >
-              <HiOutlinePlus className="w-5 h-5" />
-              New Session
-            </Link>
+            {isGitHubConnected === false ? (
+              <button
+                onClick={handleConnectGitHub}
+                className="bg-white text-[#022639] hover:bg-gray-50 px-8 py-4 rounded-xl font-bold transition-all duration-300 flex items-center gap-3 shadow-lg"
+              >
+                <FiGithub className="w-5 h-5" />
+                Connect GitHub
+              </button>
+            ) : (
+              <Link
+                to="session/new"
+                className="bg-white text-[#022639] hover:bg-gray-50 px-8 py-4 rounded-xl font-bold transition-all duration-300 flex items-center gap-3 shadow-lg"
+              >
+                <HiOutlinePlus className="w-5 h-5" />
+                New Session
+              </Link>
+            )}
           </motion.div>
         </div>
       </section>
@@ -469,13 +515,23 @@ export default function WorkSpace() {
                       Clear Filters
                     </button>
                   )}
-                  <Link
-                    to="session/new"
-                    className="px-4 py-2 bg-[#42D5AE] text-white rounded-lg hover:bg-[#38b28d] transition-colors flex items-center gap-2"
-                  >
-                    <HiOutlinePlus className="w-4 h-4" />
-                    New Session
-                  </Link>
+                  {isGitHubConnected === false ? (
+                    <button
+                      onClick={handleConnectGitHub}
+                      className="px-4 py-2 bg-[#42D5AE] text-white rounded-lg hover:bg-[#38b28d] transition-colors flex items-center gap-2"
+                    >
+                      <FiGithub className="w-4 h-4" />
+                      Connect GitHub
+                    </button>
+                  ) : (
+                    <Link
+                      to="session/new"
+                      className="px-4 py-2 bg-[#42D5AE] text-white rounded-lg hover:bg-[#38b28d] transition-colors flex items-center gap-2"
+                    >
+                      <HiOutlinePlus className="w-4 h-4" />
+                      New Session
+                    </Link>
+                  )}
                 </div>
               </motion.div>
             )}

@@ -18,6 +18,7 @@ import {
   BsX,
   BsCalendar,
   BsBarChart,
+  BsGithub,
 } from "react-icons/bs";
 import { TaskModal } from "./TaskModal";
 import { EditTaskModal } from "./EditTaskModal";
@@ -52,6 +53,7 @@ export default function TasksPage() {
   const [error, setError] = useState<string | null>(null);
   const [showEndSessionModal, setShowEndSessionModal] = useState(false);
   const [isEndingSession, setIsEndingSession] = useState(false);
+  const [isEndingSess, setIsEndingSess] = useState(false);
   const [showStatisticsModal, setShowStatisticsModal] = useState(false);
   const [statistics, setStatistics] = useState<ISessionStatistics | null>(null);
   const [isLoadingStatistics, setIsLoadingStatistics] = useState(false);
@@ -62,6 +64,7 @@ export default function TasksPage() {
     queryKey: [`UserSession`],
     url: `/sessions/by-id/${id}`,
   });
+  console.log(UserSession.data?.data);
   const { data: userProfile } = useAuthQuery<IProfileResponse>({
     queryKey: [`profile-data-${token}`],
     url: "/profile/",
@@ -88,7 +91,6 @@ export default function TasksPage() {
     (sessionData as any)?.users || (sessionData as any)?.members || [];
 
   const sessionMember: IUserSession[] = rawMembers.map((member: any) => {
-    // Helper function to get full name from firstName and lastName
     const getFullName = (obj: any): string => {
       if (obj.firstName || obj.lastName) {
         return `${obj.firstName || ""} ${obj.lastName || ""}`.trim();
@@ -96,7 +98,6 @@ export default function TasksPage() {
       return obj.fullName || obj.name || "Unknown User";
     };
 
-    // If it's a Member object (has user property)
     if (member.user) {
       const user = member.user;
       return {
@@ -104,7 +105,6 @@ export default function TasksPage() {
         fullName: getFullName(user),
       };
     }
-    // If it's already in IUserSession format or direct user object
     return {
       id: member.id || "",
       fullName: getFullName(member),
@@ -146,6 +146,16 @@ export default function TasksPage() {
 
     fetchTasks();
   }, [id]);
+
+  // Refresh page after session ends
+  useEffect(() => {
+    if (isEndingSess) {
+      // Small delay to allow toast message to be seen
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    }
+  }, [isEndingSess]);
 
   const mapStatusToColumnId = (status: string): string => {
     const statusMap: Record<string, string> = {
@@ -503,10 +513,7 @@ export default function TasksPage() {
         duration: 2000,
       });
       setShowEndSessionModal(false);
-      // Navigate back to workspace after ending session
-      setTimeout(() => {
-        Navigate("/workspace");
-      }, 1000);
+      setIsEndingSess(true);
     } catch (err: any) {
       console.error("Error ending session:", err);
       toast.error(err.response?.data?.message || "Failed to end session", {
@@ -536,7 +543,6 @@ export default function TasksPage() {
         }
       );
       setStatistics(response.data.data);
-      console.log(statistics);
     } catch (err: any) {
       console.error("Error fetching statistics:", err);
       toast.error(err.response?.data?.message || "Failed to load statistics", {
@@ -574,6 +580,19 @@ export default function TasksPage() {
                     ? "This session has ended. Tasks are read-only."
                     : "Drag and drop tasks between columns to update their status"}
                 </p>
+                {sessionData?.repoUrl && (
+                  <a
+                    href={sessionData.repoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 mt-2 text-sm font-medium text-[#42D5AE] hover:text-[#38b28d] transition-colors group"
+                  >
+                    <BsGithub className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                    <span className="truncate max-w-md">
+                      {sessionData.repoUrl}
+                    </span>
+                  </a>
+                )}
               </div>
             </div>
 

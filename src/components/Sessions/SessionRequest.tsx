@@ -219,7 +219,9 @@ export default function SessionRequest() {
                 onClick={() =>
                   router(`/workspace/session/${SessionId}/task-manager`)
                 }
-                disabled={sessionStatus !== "RUNNING"}
+                disabled={
+                  sessionStatus !== "RUNNING" && sessionStatus !== "ENDED"
+                }
                 className="group inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
               >
                 <VscTasklist className="w-4 h-4" />

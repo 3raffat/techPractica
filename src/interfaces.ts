@@ -72,6 +72,7 @@ export interface ISession {
   status: string;
   system: ISystem;
   role: string;
+  repoUrl: string;
   sessionCode: string;
   requirements: IRequirement[];
   ownerFullName: string;
@@ -296,6 +297,7 @@ export interface SessionResponse {
     }[];
     ownerFullName: string | null;
     ownerId?: string;
+    repoUrl: string;
     private: boolean;
   };
   status: number;

@@ -45,11 +45,12 @@ const RightSection = ({
       return data;
     },
     enabled: isTokenValid,
-    refetchInterval: 7000000, // Refetch every 7 seconds
+    refetchInterval: 7000, // Refetch every 7 seconds
   });
 
   const notifications = notificationsData?.data.notifications || [];
   const unreadCount = notificationsData?.data.notifications?.length || 0;
+
   return (
     <>
       <div className="flex items-center gap-3">
@@ -129,12 +130,6 @@ const RightSection = ({
                               className={`px-4 py-3 border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer ${
                                 !notification.title ? "bg-[#42D5AE]/5" : ""
                               }`}
-                              // onClick={() => {
-                              //   if (notification.link) {
-                              //     navigate(notification.link);
-                              //   }
-                              //   setShowNotifications(false);
-                              // }}
                             >
                               <div className="flex items-start gap-3">
                                 <div
@@ -157,11 +152,6 @@ const RightSection = ({
                                   <p className="text-xs text-gray-500 mt-1 line-clamp-2">
                                     {notification.content}
                                   </p>
-                                  {/* <p className="text-xs text-gray-400 mt-1">
-                                    {new Date(
-                                      notification.createdAt
-                                    ).toLocaleDateString()}
-                                  </p> */}
                                 </div>
                               </div>
                             </motion.div>

@@ -19,7 +19,6 @@ const ProfilePage = () => {
   const token = getToken();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  // Get current user's profile to compare IDs (always fetch to determine if viewing own profile)
   const { data: currentUserData } = useAuthQuery<IProfileResponse>({
     queryKey: [`current-user-profile-${token}`],
     url: "/profile/",
@@ -29,11 +28,10 @@ const ProfilePage = () => {
       },
     },
     options: {
-      enabled: !!token, // Always fetch when token is available
+      enabled: !!token,
     } as any,
   });
 
-  // Fetch profile data - use userId if provided, otherwise use own profile
   const profileUrl = userId ? `/profile/${userId}/` : "/profile/";
   const {
     data: Data,
