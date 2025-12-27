@@ -138,8 +138,14 @@ const CreateSession = () => {
           "GitHub access token is invalid or expired. User must re-authenticate"
         )
       ) {
-        const baseUrl = "http://localhost:8080";
-        window.location.href = `${baseUrl}/auth/github/connect`;
+        var res = await axiosInstance.get(
+          "http://localhost:8080/github/connect",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         return;
       }
 
